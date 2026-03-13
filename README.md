@@ -1,10 +1,12 @@
 # EchoID Nexus — Backend
 
-AI-powered academic assistant backend for universities. Built with Java 25, Spring Boot 3.x, and PostgreSQL 17.
+AI-powered academic assistant backend for universities. Built with Java 21, Spring Boot 3.4.3, and PostgreSQL 17.
+
+> **Note:** The project was originally designed for Java 25 but was downgraded to Java 21 (LTS) for Spring Boot 3.4.x compatibility.
 
 ## Prerequisites
 
-- Java 25+
+- Java 21+
 - Maven 3.9+
 - PostgreSQL 17 running locally or via Docker
 
