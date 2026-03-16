@@ -9,7 +9,7 @@ By ensuring students utilize our AI tools for studying their courses, we gather 
 The project is structured into distinct services:
 
 - **[`backend/`](./backend)**: Spring Boot service handling the core logic and API.
-- **[`frontend/`](./frontend)**: Flutter or React Native mobile component.
+- **[`frontend/`](./frontend)**: React Native mobile component.
 - **[`ai-service/`](./ai-service)**: FastAPI service for our machine learning and AI features.
 - **[`infra/`](./infra)**: Infrastructure configuration, including Docker Compose setups (`dev` & `staging`) and environment variable templates.
 - **[`docs/`](./docs)**: Project documentation and architecture diagrams.
@@ -18,7 +18,7 @@ The project is structured into distinct services:
 
 ## Team Setup
 - **Backend Engineer**: Java / Spring Boot.
-- **Frontend & Mobile Dev**: React Native / Flutter.
+- **Frontend & Mobile Dev**: React Native.
 - **AI Engineer**: Python / FastAPI / Machine Learning.
 - **All-in-One / Integration Engineer**: Infrastructure, documentation, and service integration.
 
