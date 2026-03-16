@@ -1,2 +1,61 @@
-# Dev Docker Compose
-# See root README for setup
+version: '3.8'
+
+services:
+  db:
+    image: postgres:15
+    environment:
+      POSTGRES_DB: ${DB_NAME:-echoid_dev}
+      POSTGRES_USER: ${DB_USER:-postgres}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-postgres}
+    ports:
+      - "${DB_PORT:-5432}:5432"
+    volumes:
+      - postgres_dev_data:/var/lib/postgresql/data
+    networks:
+      - echoid-network
+
+  backend:
+    # TODO: Replace with local build context once backend dockerfile is ready
+    # build:
+    #   context: ../../backend
+    image: openjdk:21-jdk-slim
+    command: tail -f /dev/null # Placeholder command until codebase is fully linked
+    ports:
+      - "${BACKEND_PORT:-8080}:8080"
+    environment:
+      - DB_HOST=db
+      - DB_PORT=5432
+      - DB_NAME=${DB_NAME:-echoid_dev}
+      - DB_USER=${DB_USER:-postgres}
+      - DB_PASSWORD=${DB_PASSWORD:-postgres}
+      # other env vars mapped here...
+    depends_on:
+      - db
+    networks:
+      - echoid-network
+
+  ai-service:
+    # TODO: Replace with local build context once ai-service dockerfile is ready
+    # build:
+    #   context: ../../ai-service
+    image: python:3.11-slim
+    command: tail -f /dev/null # Placeholder command until codebase is fully linked
+    ports:
+      - "${AI_SERVICE_PORT:-8000}:8000"
+    environment:
+      - LLM_PROVIDER=${LLM_PROVIDER:-openai}
+    networks:
+      - echoid-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 5s
+
+volumes:
+  postgres_dev_data:
+
+networks:
+  echoid-network:
+    driver: bridge
