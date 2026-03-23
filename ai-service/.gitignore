@@ -1,0 +1,16 @@
+# Python
+venv/
+__pycache__/
+*.pyc
+*.pyo
+*.egg-info/
+dist/
+build/
+
+# Environment — NEVER commit real keys
+.env
+
+# IDE
+.vscode/
+.idea/
+*.DS_Store
