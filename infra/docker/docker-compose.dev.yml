@@ -1,58 +1,135 @@
-version: '3.8'
-
 services:
-  db:
-    image: postgres:15
-    environment:
-      POSTGRES_DB: ${DB_NAME:-echoid_dev}
-      POSTGRES_USER: ${DB_USER:-postgres}
-      POSTGRES_PASSWORD: ${DB_PASSWORD:-postgres}
+
+  # ---------------------------------------------------------
+  # DATABASE
+  # PostgreSQL is the single source of truth for
+  # all persistent data. It must be healthy before
+  # backend or ai-service attempt to connect.
+  # ---------------------------------------------------------
+  postgres:
+    image: postgres:16
+    container_name: echoid_postgres
+    env_file:
+      - ../env/.env
     ports:
-      - "${DB_PORT:-5432}:5432"
+      - "5432:5432"
     volumes:
-      - postgres_dev_data:/var/lib/postgresql/data
-    networks:
-      - echoid-network
-
-  backend:
-    # TODO: Replace with local build context once backend dockerfile is ready
-    # build:
-    #   context: ../../backend
-    image: openjdk:21-jdk-slim
-    command: tail -f /dev/null # Placeholder command until codebase is fully linked
-    ports:
-      - "${BACKEND_PORT:-8080}:8080"
-    environment:
-      - SPRING_PROFILES_ACTIVE=dev
-      - DB_URL=jdbc:postgresql://db:5432/${DB_NAME:-echoid_dev}
-      - DB_USERNAME=${DB_USER:-postgres}
-      - DB_PASSWORD=${DB_PASSWORD:-postgres}
-      - GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID:-}
-      - GOOGLE_CLIENT_SECRET=${GOOGLE_CLIENT_SECRET:-}
-    depends_on:
-      - db
-    networks:
-      - echoid-network
-
-  ai-service:
-    # TODO: Replace with local build context once ai-service dockerfile is ready
-    # build:
-    #   context: ../../ai-service
-    image: python:3.11-slim
-    command: tail -f /dev/null # Placeholder command until codebase is fully linked
-    ports:
-      - "${AI_SERVICE_PORT:-8000}:8000"
-    environment:
-      - LLM_PROVIDER=${LLM_PROVIDER:-openai}
-    networks:
-      - echoid-network
-    # Healthcheck disabled until FastAPI skeleton with /health endpoint is deployed
+      - pgdata:/var/lib/postgresql/data
     healthcheck:
-      disable: true
+      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+    networks:
+      - echoid_net
 
+  # ---------------------------------------------------------
+  # BACKEND - Spring Boot (port 8080)
+  # Waits for postgres to be healthy before starting.
+  # Flyway migrations run automatically on startup.
+  # ---------------------------------------------------------
+  backend:
+    build:
+      context: ../../backend
+      dockerfile: Dockerfile
+    container_name: echoid_backend
+    env_file:
+      - ../env/.env
+    ports:
+      - "8080:8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - echoid_net
+    restart: on-failure
+
+  # ---------------------------------------------------------
+  # AI SERVICE - FastAPI (port 8000)
+  # Also waits for postgres (for future DB reads).
+  # Stateless - can be restarted freely.
+  # ---------------------------------------------------------
+  ai-service:
+    build:
+      context: ../../ai-service
+      dockerfile: Dockerfile
+    container_name: echoid_ai
+    env_file:
+      - ../env/.env
+    ports:
+      - "8000:8000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - echoid_net
+    restart: on-failure
+
+  # ---------------------------------------------------------
+  # FRONTEND WEB - React (port 3000)
+  # Professor and Admin dashboard.
+  # Does not depend on DB directly - only on backend.
+  # ---------------------------------------------------------
+  web:
+    build:
+      context: ../../frontend
+      dockerfile: Dockerfile
+    container_name: echoid_web
+    env_file:
+      - ../env/.env
+    ports:
+      - "3000:80"
+    depends_on:
+      - backend
+    networks:
+      - echoid_net
+
+  # ---------------------------------------------------------
+  # GRAFANA - Analytics dashboards (port 3001)
+  # Reads from PostgreSQL directly.
+  # Provisioning files auto-load datasource + dashboards
+  # so no manual UI clicks are needed on startup.
+  # ---------------------------------------------------------
+  grafana:
+    image: grafana/grafana:10.4.2
+    container_name: echoid_grafana
+    env_file:
+      - ../env/.env
+    environment:
+      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_ADMIN_PASSWORD:-admin}
+      GF_USERS_ALLOW_SIGN_UP: "false"
+    ports:
+      - "3001:3000"
+    volumes:
+      - ../grafana/provisioning:/etc/grafana/provisioning
+      - grafana_data:/var/lib/grafana
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - echoid_net
+
+# ---------------------------------------------------------
+# NAMED VOLUMES
+# Declared here so Docker manages their lifecycle.
+# These survive "docker-compose down".
+# Use "docker-compose down -v" to wipe them (DESTRUCTIVE).
+# ---------------------------------------------------------
 volumes:
-  postgres_dev_data:
+  pgdata:
+    name: echoid_pgdata
+  grafana_data:
+    name: echoid_grafana_data
 
+# ---------------------------------------------------------
+# NETWORK
+# All services share one private network.
+# Services address each other by service name:
+#   backend -> postgres:5432 (not localhost:5432)
+#   backend -> ai-service:8000
+# ---------------------------------------------------------
 networks:
-  echoid-network:
+  echoid_net:
+    name: echoid_net
     driver: bridge

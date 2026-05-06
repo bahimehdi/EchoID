@@ -1,0 +1,21 @@
+# Grafana reads this file on startup and creates the datasource automatically.
+# No UI clicks needed. The datasource name "EchoID-PG" is what dashboards
+# will reference — do not rename it without updating all dashboard JSON files.
+
+apiVersion: 1
+
+datasources:
+  - name: EchoID-PG
+    type: postgres
+    url: postgres:5432          # service name — internal Docker network
+    user: ${POSTGRES_USER}
+    secureJsonData:
+      password: ${POSTGRES_PASSWORD}
+    jsonData:
+      database: ${POSTGRES_DB}
+      sslmode: disable           # fine for local dev; enable for staging/prod
+      maxOpenConns: 10
+      maxIdleConns: 5
+      connMaxLifetime: 14400
+    isDefault: true
+    editable: false              # lock it — prevents accidental UI edits

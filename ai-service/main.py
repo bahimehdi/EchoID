@@ -3,7 +3,9 @@ from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
 import time
 
-from routers import explain, ocr, workload
+import explain
+import ocr
+import workload
 
 
 # ── Startup / shutdown events ─────────────────────────────────

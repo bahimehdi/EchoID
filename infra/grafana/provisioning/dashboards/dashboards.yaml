@@ -1,0 +1,14 @@
+# Tells Grafana where to look for dashboard JSON files.
+# Any .json file dropped in ./dashboards/ is auto-imported.
+# This is how KAN-5 (professor + admin dashboards) will plug in
+# without touching this file again.
+
+apiVersion: 1
+
+providers:
+  - name: EchoID Dashboards
+    type: file
+    disableDeletion: true        # prevents deletion from UI
+    updateIntervalSeconds: 30    # polls for new/updated JSON files
+    options:
+      path: /etc/grafana/provisioning/dashboards
