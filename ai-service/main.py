@@ -5,7 +5,10 @@ import time
 
 import explain
 import ocr
+from settings import get_settings
 import workload
+
+settings = get_settings()
 
 
 # ── Startup / shutdown events ─────────────────────────────────
