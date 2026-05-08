@@ -17,19 +17,25 @@ public class CourseService {
                         .id(UUID.randomUUID())
                         .title("Introduction to Machine Learning")
                         .lmsSource("MOODLE")
+                        .school("ENSA")
                         .semester("S1")
+                        .isActive(true)
                         .build(),
                 CourseDto.builder()
                         .id(UUID.randomUUID())
                         .title("Database Systems")
                         .lmsSource("GOOGLE_CLASSROOM")
+                        .school("ENSA")
                         .semester("S1")
+                        .isActive(true)
                         .build(),
                 CourseDto.builder()
                         .id(UUID.randomUUID())
                         .title("Software Engineering")
                         .lmsSource("MOODLE")
+                        .school("EST")
                         .semester("S2")
+                        .isActive(true)
                         .build()
         );
     }
@@ -38,15 +44,23 @@ public class CourseService {
         return List.of(
                 AssignmentDto.builder()
                         .id(UUID.randomUUID())
+                        .courseId(courseId)
+                        .courseTitle("Introduction to Machine Learning")
                         .title("Linear Regression Report")
+                        .description("Implement and analyze simple linear regression on a provided dataset")
                         .dueAt(OffsetDateTime.now().plusDays(7))
-                        .aiComplexityScore(3.2)
+                        .complexity(3.2)
+                        .assignmentType("PROJECT")
                         .build(),
                 AssignmentDto.builder()
                         .id(UUID.randomUUID())
+                        .courseId(courseId)
+                        .courseTitle("Introduction to Machine Learning")
                         .title("Neural Network Lab")
+                        .description("Build a basic feedforward neural network from scratch")
                         .dueAt(OffsetDateTime.now().plusDays(14))
-                        .aiComplexityScore(4.8)
+                        .complexity(4.8)
+                        .assignmentType("HOMEWORK")
                         .build()
         );
     }

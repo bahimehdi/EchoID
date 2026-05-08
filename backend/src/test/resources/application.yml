@@ -1,0 +1,38 @@
+spring:
+  datasource:
+    url: jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${DB_NAME:echoid_dev}
+    username: ${DB_USERNAME:postgres}
+    password: ${DB_PASSWORD:postgres}
+
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+    open-in-view: false
+
+  flyway:
+    enabled: false
+
+  security:
+    oauth2:
+      client:
+        registration:
+          google:
+            client-id: test-client-id
+            client-name: Google
+            client-secret: test-client-secret
+            scope:
+              - openid
+              - email
+              - profile
+        provider:
+          google:
+            issuer-uri: https://accounts.google.com
+      resourceserver:
+        jwt:
+          issuer-uri: https://accounts.google.com
+
+springdoc:
+  api-docs:
+    path: /v3/api-docs
+  swagger-ui:
+    path: /swagger-ui.html
