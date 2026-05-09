@@ -43,6 +43,9 @@ public class SecurityConfig {
                 .requestMatchers("/actuator/health").permitAll()
                 .requestMatchers("/swagger-ui/**", "/swagger-ui.html", "/v3/api-docs/**").permitAll()
                 .requestMatchers("/api/auth/**").permitAll()
+                .requestMatchers("/api/admin/**").hasRole("ADMIN")
+                .requestMatchers("/api/students/{id}/**").hasAnyRole("STUDENT", "ADMIN")
+                .requestMatchers("/api/ai/ocr/**").hasAnyRole("PROFESSOR", "ADMIN")
                 .requestMatchers("/api/**").authenticated()
                 .anyRequest().denyAll()
             )
@@ -53,11 +56,20 @@ public class SecurityConfig {
                     response.setContentType(MediaType.APPLICATION_JSON_VALUE);
 
                     Map<String, Object> body = new LinkedHashMap<>();
-                    body.put("timestamp", OffsetDateTime.now().toString());
-                    body.put("status", 401);
-                    body.put("error", "Unauthorized");
+                    body.put("success", false);
                     body.put("message", "Authentication required");
-                    body.put("path", request.getRequestURI());
+                    body.put("timestamp", OffsetDateTime.now().toString());
+
+                    objectMapper.writeValue(response.getOutputStream(), body);
+                });
+                ex.accessDeniedHandler((request, response, accessDeniedException) -> {
+                    response.setStatus(403);
+                    response.setContentType(MediaType.APPLICATION_JSON_VALUE);
+
+                    Map<String, Object> body = new LinkedHashMap<>();
+                    body.put("success", false);
+                    body.put("message", "Access denied: you do not have the required permissions");
+                    body.put("timestamp", OffsetDateTime.now().toString());
 
                     objectMapper.writeValue(response.getOutputStream(), body);
                 });
