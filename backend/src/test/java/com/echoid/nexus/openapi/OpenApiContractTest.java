@@ -2,10 +2,11 @@ package com.echoid.nexus.openapi;
 
 import com.echoid.nexus.repository.AssignmentRepository;
 import com.echoid.nexus.repository.CourseRepository;
-import com.echoid.nexus.repository.NotificationRepository;
-import com.echoid.nexus.repository.UniversityRepository;
+import com.echoid.nexus.repository.EmailVerificationTokenRepository;
+import com.echoid.nexus.repository.RefreshTokenRepository;
 import com.echoid.nexus.repository.UserRepository;
 import com.echoid.nexus.security.CustomOAuth2UserService;
+import com.echoid.nexus.service.JwtService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
@@ -20,7 +21,7 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 
-import org.springframework.security.oauth2.jwt.JwtDecoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
 import javax.sql.DataSource;
 
@@ -47,7 +48,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 })
 @TestPropertySource(properties = {
         // Supply the CORS property that CorsConfig @Value requires
-        "app.cors.allowed-origins=http://localhost:3000"
+        "app.cors.allowed-origins=http://localhost:3000",
+        "app.jwt.secret=dGhpcyBpcyBhIGRldmVsb3BtZW50LW9ubHkgc2VjcmV0IGtleSB0aGF0IG11c3QgYmUgcmVwbGFjZWQgaW4gcHJvZA=="
 })
 class OpenApiContractTest {
 
@@ -62,14 +64,15 @@ class OpenApiContractTest {
     @MockitoBean
     private UserRepository userRepository;
 
-    @MockitoBean
-    private UniversityRepository universityRepository;
 
     @MockitoBean
     private CourseRepository courseRepository;
 
     @MockitoBean
-    private NotificationRepository notificationRepository;
+    private RefreshTokenRepository refreshTokenRepository;
+
+    @MockitoBean
+    private EmailVerificationTokenRepository emailVerificationTokenRepository;
 
     @MockitoBean
     private AssignmentRepository assignmentRepository;
@@ -78,7 +81,10 @@ class OpenApiContractTest {
     private CustomOAuth2UserService customOAuth2UserService;
 
     @MockitoBean
-    private JwtDecoder jwtDecoder;
+    private JwtService jwtService;
+
+    @MockitoBean
+    private PasswordEncoder passwordEncoder;
 
     // ── Tests ────────────────────────────────────────────────────
 

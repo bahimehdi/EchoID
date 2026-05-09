@@ -12,7 +12,7 @@ import java.util.UUID;
 @Getter
 @Setter
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
-@ToString(exclude = {"assignment", "user"})
+@ToString(exclude = {"assignment", "student"})
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
@@ -28,8 +28,8 @@ public class Milestone {
     private Assignment assignment;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id", nullable = false)
-    private User user;
+    @JoinColumn(name = "student_id", nullable = false)
+    private User student;
 
     @Column(nullable = false)
     private String title;
@@ -45,6 +45,6 @@ public class Milestone {
     private OffsetDateTime completedAt;
 
     @CreationTimestamp
-    @Column(name = "created_at", nullable = false, updatable = false)
+    @Column(name = "created_at", updatable = false)
     private OffsetDateTime createdAt;
 }

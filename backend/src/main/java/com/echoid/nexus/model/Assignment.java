@@ -33,20 +33,21 @@ public class Assignment {
 
     private String description;
 
-    @Column(name = "ai_complexity_score")
-    private Double aiComplexityScore;
+    @Column(name = "complexity", nullable = false)
+    @Builder.Default
+    private Double complexity = 1.0;
 
-    @Column(name = "professor_complexity_override")
-    private Double professorComplexityOverride;
+    @Column(name = "assignment_type", nullable = false, length = 50)
+    private String assignmentType;
 
     @Column(name = "due_at", nullable = false)
     private OffsetDateTime dueAt;
 
     @CreationTimestamp
-    @Column(name = "created_at", nullable = false, updatable = false)
+    @Column(name = "created_at", updatable = false)
     private OffsetDateTime createdAt;
 
     @UpdateTimestamp
-    @Column(name = "updated_at", nullable = false)
+    @Column(name = "updated_at")
     private OffsetDateTime updatedAt;
 }
