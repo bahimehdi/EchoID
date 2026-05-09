@@ -12,5 +12,5 @@ datasources:
     jsonData:
       sslmode: 'disable'
       postgresVersion: 1600
-    isDefault: true
+    isDefault: false
     editable: true
