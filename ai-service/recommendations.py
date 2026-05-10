@@ -34,6 +34,7 @@ class AtRiskStudent(BaseModel):
     school: str
     riskScore: float
     lastSeen: str
+    reasons: list[str]
 
 
 class InterventionSuggestion(BaseModel):
@@ -41,6 +42,22 @@ class InterventionSuggestion(BaseModel):
     module: str
     suggestion: str
     confidence: float
+
+
+class CheatingStudent(BaseModel):
+    id: str
+    name: str
+
+
+class CheatingCluster(BaseModel):
+    clusterId: str
+    assignmentTitle: str
+    module: str
+    avgSimilarity: float
+    submittedWithinMinutes: int
+    students: list[CheatingStudent]
+    evidence: list[str]
+    recommendation: str
 
 
 # ── Synthetic cohort (deterministic per restart) ─────────────────────────────
@@ -99,6 +116,20 @@ def _risk(student: dict) -> float:
     return 1.0 / (1.0 + math.exp(-z))
 
 
+def _risk_reasons(student: dict) -> list[str]:
+    contributions = [
+        (4.0 * student["wd_trend"], f"Charge Wd élevée ({student['wd_trend']:.2f})"),
+        (0.10 * student["days_since_last_login"], f"Connexion il y a {student['days_since_last_login']} jours"),
+        (max(0, 6 - student["active_days_14d"]) * 0.12,
+         f"Seulement {student['active_days_14d']} jours actifs sur 14"),
+        (max(0, 5 - student["explainer_calls"]) * 0.08,
+         "Aucune sollicitation récente de NexusAI" if student["explainer_calls"] == 0
+         else f"{student['explainer_calls']} appels NexusAI cette semaine"),
+    ]
+    ranked = [label for score, label in sorted(contributions, key=lambda item: -item[0]) if score > 0]
+    return ranked[:2] or ["Signal faible mais suivi recommandé"]
+
+
 # ── Endpoints ────────────────────────────────────────────────────────────────
 
 @router.get("/concept-bottlenecks", response_model=list[Bottleneck])
@@ -124,7 +155,7 @@ def at_risk_students(school: School = Query("ALL"), limit: int = Query(10, ge=1,
         last_seen = (now - timedelta(days=s["days_since_last_login"])).isoformat()
         scored.append(AtRiskStudent(
             studentId=s["studentId"], fullName=s["fullName"], school=s["school"],
-            riskScore=round(score, 3), lastSeen=last_seen,
+            riskScore=round(score, 3), lastSeen=last_seen, reasons=_risk_reasons(s),
         ))
     scored.sort(key=lambda a: -a.riskScore)
     return scored[:limit]
@@ -154,4 +185,30 @@ def intervention_suggestions() -> list[InterventionSuggestion]:
                        "ont consulté l'explication, contre 25 % d'engagement habituel.",
             confidence=0.81,
         ),
+    ]
+
+
+@router.get("/cheating-clusters", response_model=list[CheatingCluster])
+def cheating_clusters(school: School = Query("ENSA")) -> list[CheatingCluster]:
+    if school not in ("ENSA", "ALL"):
+        return []
+    return [
+        CheatingCluster(
+            clusterId="PY-R-01",
+            assignmentTitle="TP Python — Récursivité",
+            module="Algorithmique & Programmation",
+            avgSimilarity=0.88,
+            submittedWithinMinutes=11,
+            students=[
+                CheatingStudent(id="stu-0008", name="Adil Bouzidi"),
+                CheatingStudent(id="stu-0015", name="Lina Tazi"),
+                CheatingStudent(id="stu-0029", name="Sara Mansouri"),
+            ],
+            evidence=[
+                "Commentaires identiques aux lignes 12, 38 et 47",
+                "Même variable total_pts, rare dans la cohorte (< 5 %)",
+                "Indentation et lignes vides identiques sur les fonctions récursives",
+            ],
+            recommendation="Vérifier les soumissions Moodle avant validation finale des notes.",
+        )
     ]

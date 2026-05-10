@@ -39,6 +39,8 @@ class AdminControllerTest {
                     .thenReturn(List.of(Map.of("studentId", "stu-0001", "riskScore", 0.82)));
             when(mock.getJson(startsWith("/recommendations/intervention-suggestions")))
                     .thenReturn(List.of(Map.of("cohort", "ENSAK CP1 S2", "confidence", 0.86)));
+            when(mock.getJson(startsWith("/recommendations/cheating-clusters")))
+                    .thenReturn(List.of(Map.of("clusterId", "PY-R-01", "avgSimilarity", 0.88)));
             return mock;
         }
     }
@@ -72,6 +74,14 @@ class AdminControllerTest {
     @WithMockUser
     void interventionSuggestions_returnsList() throws Exception {
         mockMvc.perform(get("/api/admin/recommendations/intervention-suggestions"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data").isArray());
+    }
+
+    @Test
+    @WithMockUser
+    void cheatingClusters_returnsList() throws Exception {
+        mockMvc.perform(get("/api/admin/recommendations/cheating-clusters?school=ENSA"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.data").isArray());
     }

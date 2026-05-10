@@ -1,7 +1,34 @@
 import { useQuery } from '@tanstack/react-query';
+import {
+  Area,
+  AreaChart,
+  Bar,
+  BarChart,
+  CartesianGrid,
+  Cell,
+  Legend,
+  Pie,
+  PieChart,
+  ResponsiveContainer,
+  Tooltip,
+  XAxis,
+  YAxis,
+} from 'recharts';
 import Shell from '../components/Shell';
 import Card from '../components/Card';
+import InsightBlock from '../components/InsightBlock';
+import StatCard from '../components/StatCard';
+import Badge from '../components/Badge';
+import {
+  adminInsights,
+  cohortHealth,
+  deadlineSubmissions,
+  difficultConcepts,
+  weekdayEngagement,
+  weeklyExplainer,
+} from '../lib/insightsFixtures';
 import { api, unwrap } from '../lib/api';
+import { colors, fontSize, radius, spacing } from '../lib/theme';
 
 type AdminHealth = {
   totalActiveStudents: number;
@@ -12,84 +39,265 @@ type AdminHealth = {
   lastEventReceivedAt: string;
 };
 
-type Suggestion = { cohort: string; module: string; suggestion: string; confidence: number };
-
 export default function Admin() {
   const health = useQuery({
     queryKey: ['adminHealth'],
     queryFn: () => unwrap<AdminHealth>(api.get('/api/admin/health')),
   });
-  const suggestions = useQuery({
-    queryKey: ['interventions'],
-    queryFn: () => unwrap<Suggestion[]>(api.get('/api/admin/recommendations/intervention-suggestions')),
-  });
 
   return (
-    <Shell title="Tableau de bord — Administrateurs">
+    <Shell title="Tableau de bord" subtitle="Vue administrateur - pilote ENSAK">
       {health.error && (
         <div style={errBanner}>
-          ⚠ /api/admin/health a échoué : {(health.error as Error).message}.
-          Vérifie que tu es bien connecté en tant qu'admin (déconnecte-toi puis re-login).
+          /api/admin/health a échoué : {(health.error as Error).message}. Reconnecte-toi avec le compte admin demo.
         </div>
       )}
+
+      <section style={sectionHeader}>
+        <Badge tone="primary">Pilotage ENSAK</Badge>
+        <h2 style={sectionTitle}>Signaux opérationnels</h2>
+      </section>
+
       <div style={kpiRow}>
-        <Kpi label="Étudiants actifs (7 j)" value={health.data?.totalActiveStudents ?? '—'} />
-        <Kpi label="Uploads cette semaine" value={health.data?.totalUploadsThisWeek ?? '—'} />
-        <Kpi label="Étudiants à risque" value={health.data?.atRiskCount ?? '—'} />
-        <Kpi label="LMS" value={health.data?.lmsStatus ?? '—'} />
-        <Kpi label="AI service" value={health.data?.aiServiceStatus ?? '—'} />
+        <StatCard label="Étudiants actifs" value={health.data?.totalActiveStudents ?? '—'} detail="7 jours" />
+        <StatCard label="Uploads" value={health.data?.totalUploadsThisWeek ?? '—'} detail="semaine" accent="blue" />
+        <StatCard label="À risque" value={health.data?.atRiskCount ?? '—'} detail="surveillance" accent="orange" />
+        <StatCard label="LMS" value={health.data?.lmsStatus ?? '—'} detail="Moodle + Classroom" accent="green" />
+        <StatCard label="AI service" value={health.data?.aiServiceStatus ?? '—'} detail="NexusAI" accent="green" />
       </div>
 
-      <div style={grid}>
-        <Card title="Recommandations d'intervention" subtitle="Règles ML : déclenchées quand un goulot dépasse le seuil et un examen approche">
-          {suggestions.isLoading && <p style={dim}>Chargement…</p>}
-          {suggestions.error && <p style={err}>Données indisponibles : {(suggestions.error as Error).message}</p>}
-          {suggestions.data && (
-            <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
-              {suggestions.data.map((s, i) => (
-                <li key={i} style={card2}>
-                  <div style={{ fontWeight: 600 }}>{s.cohort} — {s.module}</div>
-                  <p style={{ margin: '4px 0', color: '#CBD5E1', fontSize: 13 }}>{s.suggestion}</p>
-                  <div style={dim}>Confiance : {Math.round(s.confidence * 100)} %</div>
-                </li>
-              ))}
-            </ul>
-          )}
+      <div style={dashboardGrid}>
+        <Card title="Volume des requêtes NexusAI" subtitle="Requêtes explainer par semaine" accent="primary">
+          <div style={chartBox}>
+            <ResponsiveContainer width="100%" height="100%">
+              <AreaChart data={weeklyExplainer} margin={{ top: 10, right: 10, bottom: 0, left: -20 }}>
+                <defs>
+                  <linearGradient id="usage" x1="0" x2="0" y1="0" y2="1">
+                    <stop offset="5%" stopColor={colors.primary} stopOpacity={0.28} />
+                    <stop offset="95%" stopColor={colors.primary} stopOpacity={0.02} />
+                  </linearGradient>
+                </defs>
+                <CartesianGrid stroke={colors.border} vertical={false} />
+                <XAxis dataKey="week" stroke={colors.textMuted} fontSize={11} tickLine={false} axisLine={false} />
+                <YAxis stroke={colors.textMuted} fontSize={11} tickLine={false} axisLine={false} />
+                <Tooltip contentStyle={tooltipStyle} />
+                <Area type="monotone" dataKey="requests" stroke={colors.primary} strokeWidth={3} fill="url(#usage)" />
+              </AreaChart>
+            </ResponsiveContainer>
+          </div>
+          <InsightBlock insight={adminInsights.usage} />
         </Card>
 
-        <Card title="Tableaux Grafana" subtitle="Vue plateforme : volumes par école, sessions, OCR">
-          <iframe
-            src={`http://localhost:3001/d-solo/admin/admin?orgId=1&theme=dark&kiosk`}
-            style={{ width: '100%', height: 360, border: 0, borderRadius: 8 }}
-          />
-          <p style={dim}>
-            <strong>Grafana indisponible ?</strong> Lance-le en local :
-            <br /><code>docker run -d -p 3001:3000 -v "$PWD/infra/grafana/provisioning:/etc/grafana/provisioning" grafana/grafana</code>
-            <br />puis configure une datasource Postgres pointant sur <code>host.docker.internal:5432 / echoid_dev / postgres / postgres</code>.
-            Les dashboards JSON dans <code>infra/grafana/provisioning/dashboards/</code> seront chargés automatiquement.
-          </p>
+        <Card title="Soumissions vs deadlines" subtitle="Rendus à temps et retards de 1-2 jours" accent="orange">
+          <div style={chartBox}>
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={deadlineSubmissions} margin={{ top: 10, right: 10, bottom: 0, left: -20 }}>
+                <CartesianGrid stroke={colors.border} vertical={false} />
+                <XAxis dataKey="label" stroke={colors.textMuted} fontSize={11} tickLine={false} axisLine={false} />
+                <YAxis stroke={colors.textMuted} fontSize={11} tickLine={false} axisLine={false} />
+                <Tooltip contentStyle={tooltipStyle} />
+                <Legend iconType="circle" wrapperStyle={{ fontSize: 12 }} />
+                <Bar dataKey="onTime" name="À temps" fill={colors.accentGreen} radius={[8, 8, 0, 0]} />
+                <Bar dataKey="late" name="Retard 1-2 j" fill={colors.accentOrange} radius={[8, 8, 0, 0]} />
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+          <InsightBlock insight={adminInsights.deadlines} accent="orange" />
+        </Card>
+
+        <Card title="Santé des cohortes ENSA" subtitle="Activité, risque et taux de retard" accent="blue">
+          <div style={chartBox}>
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={cohortHealth} margin={{ top: 10, right: 10, bottom: 0, left: -20 }}>
+                <CartesianGrid stroke={colors.border} vertical={false} />
+                <XAxis dataKey="cohort" stroke={colors.textMuted} fontSize={11} tickLine={false} axisLine={false} />
+                <YAxis stroke={colors.textMuted} fontSize={11} tickLine={false} axisLine={false} />
+                <Tooltip contentStyle={tooltipStyle} />
+                <Legend iconType="circle" wrapperStyle={{ fontSize: 12 }} />
+                <Bar dataKey="active" name="Actifs 7 j" stackId="a" fill={colors.primary} radius={[8, 8, 0, 0]} />
+                <Bar dataKey="atRisk" name="À risque" stackId="a" fill={colors.accentRed} />
+                <Bar dataKey="lateRate" name="Retard %" stackId="a" fill={colors.accentOrange} />
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+          <InsightBlock insight={adminInsights.cohort} accent="blue" />
+        </Card>
+
+        <Card title="Engagement par jour" subtitle="Sessions moyennes par jour de semaine" accent="green">
+          <div style={chartBox}>
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={weekdayEngagement} layout="vertical" margin={{ top: 10, right: 10, bottom: 0, left: -20 }}>
+                <CartesianGrid stroke={colors.border} horizontal={false} />
+                <XAxis type="number" stroke={colors.textMuted} fontSize={11} tickLine={false} axisLine={false} />
+                <YAxis dataKey="day" type="category" stroke={colors.textMuted} fontSize={11} tickLine={false} axisLine={false} />
+                <Tooltip contentStyle={tooltipStyle} />
+                <Bar dataKey="sessions" name="Sessions" fill={colors.accentGreen} radius={[0, 8, 8, 0]} />
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+          <InsightBlock insight={adminInsights.weekday} accent="green" />
+        </Card>
+
+        <Card title="Top concepts difficiles" subtitle="Répartition des demandes par module" accent="purple" style={{ gridColumn: '1 / -1' }}>
+          <div style={conceptGrid}>
+            <div style={donutBox}>
+              <ResponsiveContainer width="100%" height={250}>
+                <PieChart>
+                  <Pie
+                    data={difficultConcepts}
+                    dataKey="value"
+                    innerRadius={70}
+                    outerRadius={105}
+                    paddingAngle={4}
+                    nameKey="name"
+                  >
+                    {difficultConcepts.map((entry) => (
+                      <Cell key={entry.name} fill={entry.color} />
+                    ))}
+                  </Pie>
+                  <Tooltip contentStyle={tooltipStyle} />
+                </PieChart>
+              </ResponsiveContainer>
+            </div>
+            <div style={conceptList}>
+              {difficultConcepts.map((concept) => (
+                <div key={concept.name} style={conceptRow}>
+                  <span style={{ ...dot, background: concept.color }} />
+                  <span style={{ flex: 1 }}>{concept.name}</span>
+                  <strong>{concept.value} %</strong>
+                </div>
+              ))}
+            </div>
+          </div>
+          <InsightBlock insight={adminInsights.concepts} accent="purple" />
+        </Card>
+
+        <Card title="Grafana" subtitle="Analyse approfondie hors parcours demo" accent="red" style={{ gridColumn: '1 / -1' }}>
+          <div style={grafanaBox}>
+            <div>
+              <strong style={{ color: colors.text }}>Recommandation actuelle</strong>
+              <p style={grafanaText}>
+                Ne pas montrer l'iframe Grafana dans le web app tant que l'embed local n'est pas stable. Pour le corriger:
+                lancer le stack Docker complet, vérifier la datasource Postgres, puis activer explicitement l'embed anonyme côté Grafana.
+              </p>
+            </div>
+            <a href="http://localhost:3001" target="_blank" rel="noreferrer" style={grafanaLink}>
+              Ouvrir Grafana local
+            </a>
+          </div>
         </Card>
       </div>
     </Shell>
   );
 }
 
-function Kpi({ label, value }: { label: string; value: number | string }) {
-  return (
-    <div style={kpi}>
-      <div style={{ color: '#94A3B8', fontSize: 11, textTransform: 'uppercase', letterSpacing: 0.5 }}>{label}</div>
-      <div style={{ fontSize: 28, fontWeight: 800, marginTop: 4 }}>{value}</div>
-    </div>
-  );
-}
+const sectionHeader: React.CSSProperties = {
+  alignItems: 'center',
+  display: 'flex',
+  gap: spacing.md,
+  marginBottom: spacing.md,
+};
 
-const kpiRow: React.CSSProperties = { display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 12, marginBottom: 16 };
-const kpi: React.CSSProperties = { background: '#1E293B', borderRadius: 14, padding: 16, border: '1px solid #1f2a44' };
-const grid: React.CSSProperties = { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 };
-const card2: React.CSSProperties = { padding: 12, borderBottom: '1px solid #1f2a44' };
-const dim: React.CSSProperties = { color: '#94A3B8', fontSize: 12 };
-const err: React.CSSProperties = { color: '#F87171', fontSize: 13 };
+const sectionTitle: React.CSSProperties = {
+  color: colors.text,
+  fontSize: fontSize.xl,
+  fontWeight: 900,
+  margin: 0,
+};
+
+const kpiRow: React.CSSProperties = {
+  display: 'grid',
+  gap: spacing.md,
+  gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))',
+  marginBottom: spacing.lg,
+};
+
+const dashboardGrid: React.CSSProperties = {
+  display: 'grid',
+  gap: spacing.lg,
+  gridTemplateColumns: 'repeat(auto-fit, minmax(420px, 1fr))',
+};
+
+const chartBox: React.CSSProperties = {
+  height: 260,
+  minWidth: 0,
+};
+
+const tooltipStyle: React.CSSProperties = {
+  background: colors.surface,
+  border: `1px solid ${colors.border}`,
+  borderRadius: radius.md,
+  boxShadow: '0 12px 24px rgba(11, 27, 69, 0.10)',
+  color: colors.text,
+};
+
+const conceptGrid: React.CSSProperties = {
+  alignItems: 'center',
+  display: 'grid',
+  gap: spacing.lg,
+  gridTemplateColumns: 'minmax(260px, 0.8fr) minmax(260px, 1fr)',
+};
+
+const donutBox: React.CSSProperties = {
+  minWidth: 0,
+};
+
+const conceptList: React.CSSProperties = {
+  display: 'grid',
+  gap: spacing.sm,
+};
+
+const conceptRow: React.CSSProperties = {
+  alignItems: 'center',
+  background: colors.surfaceMuted,
+  borderRadius: radius.md,
+  color: colors.text,
+  display: 'flex',
+  fontSize: fontSize.md,
+  gap: spacing.sm,
+  padding: `${spacing.md}px ${spacing.lg}px`,
+};
+
+const dot: React.CSSProperties = {
+  borderRadius: radius.pill,
+  height: 10,
+  width: 10,
+};
+
+const grafanaBox: React.CSSProperties = {
+  alignItems: 'center',
+  background: colors.accentRedSoft,
+  borderRadius: radius.md,
+  display: 'flex',
+  gap: spacing.lg,
+  justifyContent: 'space-between',
+  padding: spacing.lg,
+};
+
+const grafanaText: React.CSSProperties = {
+  color: colors.textMuted,
+  fontSize: fontSize.md,
+  lineHeight: 1.5,
+  margin: `${spacing.xs}px 0 0`,
+};
+
+const grafanaLink: React.CSSProperties = {
+  background: colors.surface,
+  borderRadius: radius.md,
+  color: colors.accentRed,
+  flex: '0 0 auto',
+  fontSize: fontSize.md,
+  fontWeight: 900,
+  padding: `${spacing.md}px ${spacing.lg}px`,
+  textDecoration: 'none',
+};
+
 const errBanner: React.CSSProperties = {
-  background: '#3F1D1D', color: '#FCA5A5', borderRadius: 8, padding: 12,
-  marginBottom: 12, fontSize: 13, border: '1px solid #7F1D1D',
+  background: colors.accentRedSoft,
+  border: `1px solid ${colors.accentRed}`,
+  borderRadius: radius.md,
+  color: colors.accentRed,
+  fontSize: fontSize.md,
+  marginBottom: spacing.md,
+  padding: spacing.md,
 };

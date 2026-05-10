@@ -88,4 +88,18 @@ public class AdminController {
             return ResponseEntity.status(HttpStatus.BAD_GATEWAY).body(ApiResponse.error("AI service unreachable"));
         }
     }
+
+    @GetMapping("/recommendations/cheating-clusters")
+    @Operation(summary = "Potentially similar assignment submissions",
+            description = "Proxies to ai-service GET /recommendations/cheating-clusters. Demo fixture for Moodle Python submissions.")
+    public ResponseEntity<ApiResponse<Object>> cheatingClusters(
+            @RequestParam(required = false, defaultValue = "ENSA") String school) {
+        try {
+            return ResponseEntity.ok(ApiResponse.ok(
+                    aiClient.getJson("/recommendations/cheating-clusters?school=" + school)));
+        } catch (Exception e) {
+            log.warn("recommendations/cheating-clusters failed: {}", e.getMessage());
+            return ResponseEntity.status(HttpStatus.BAD_GATEWAY).body(ApiResponse.error("AI service unreachable"));
+        }
+    }
 }

@@ -1,15 +1,44 @@
-import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from 'recharts';
+import {
+  Bar,
+  BarChart,
+  CartesianGrid,
+  ResponsiveContainer,
+  Tooltip,
+  XAxis,
+  YAxis,
+} from 'recharts';
 import Shell from '../components/Shell';
 import Card from '../components/Card';
+import Badge from '../components/Badge';
+import Donut from '../components/Donut';
+import InsightBlock from '../components/InsightBlock';
 import { api, unwrap } from '../lib/api';
+import { demoCheatingClusters, professorInsights, pythonGradeDistribution } from '../lib/insightsFixtures';
+import { colors, fontSize, radius, spacing } from '../lib/theme';
 
 type Bottleneck = { conceptSlug: string; courseTitle: string; queryCount: number; uniqueStudents: number };
-type AtRiskStudent = { studentId: string; fullName: string; school: string; riskScore: number; lastSeen: string };
+type AtRiskStudent = {
+  studentId: string;
+  fullName: string;
+  school: string;
+  riskScore: number;
+  lastSeen: string;
+  reasons?: string[];
+};
+type CheatingCluster = {
+  clusterId: string;
+  assignmentTitle: string;
+  module: string;
+  avgSimilarity: number;
+  submittedWithinMinutes: number;
+  students: Array<{ id: string; name: string }>;
+  evidence: string[];
+  recommendation: string;
+};
 
 export default function Professor() {
-  const [school, setSchool] = useState<'ENSA' | 'EST' | 'FAC' | 'ALL'>('ENSA');
+  const school = 'ENSA';
 
   const bottlenecks = useQuery({
     queryKey: ['bottlenecks', school],
@@ -17,88 +46,280 @@ export default function Professor() {
   });
   const atRisk = useQuery({
     queryKey: ['atRisk', school],
-    queryFn: () => unwrap<AtRiskStudent[]>(api.get(`/api/admin/recommendations/at-risk-students?school=${school}`)),
+    queryFn: () => unwrap<AtRiskStudent[]>(api.get(`/api/admin/recommendations/at-risk-students?school=${school}&limit=6`)),
+  });
+  const cheating = useQuery({
+    queryKey: ['cheatingClusters', school],
+    queryFn: async () => {
+      try {
+        return await unwrap<CheatingCluster[]>(api.get(`/api/admin/recommendations/cheating-clusters?school=${school}`));
+      } catch {
+        return demoCheatingClusters;
+      }
+    },
   });
 
   return (
-    <Shell title="Tableau de bord — Enseignants">
-      <div style={{ display: 'flex', gap: 12, marginBottom: 16 }}>
-        {(['ENSA', 'EST', 'FAC', 'ALL'] as const).map((s) => (
-          <button key={s} onClick={() => setSchool(s)} style={pill(school === s)}>
-            {s}
-          </button>
-        ))}
-      </div>
+    <Shell title="Tableau de bord" subtitle="Cohorte : ENSA - Cycle préparatoire">
+      <section style={sectionHeader}>
+        <Badge tone="primary">ENSA uniquement</Badge>
+        <h2 style={sectionTitle}>Signaux pédagogiques</h2>
+      </section>
 
       <div style={grid}>
-        <Card title="Concepts les plus demandés" subtitle="Top des concepts pour lesquels les étudiants demandent une explication">
-          {bottlenecks.isLoading && <p style={dim}>Chargement…</p>}
-          {bottlenecks.error && <p style={err}>Données indisponibles (la base n'est peut-être pas peuplée).</p>}
+        <Card title="Concepts les plus demandés" subtitle="Demandes NexusAI par concept cette semaine" accent="primary">
+          {bottlenecks.isLoading && <p style={dim}>Chargement...</p>}
+          {bottlenecks.error && <p style={err}>Données indisponibles.</p>}
           {bottlenecks.data && (
-            <ResponsiveContainer width="100%" height={260}>
-              <BarChart data={bottlenecks.data} margin={{ top: 8, right: 16, bottom: 24, left: 0 }}>
-                <CartesianGrid stroke="#1f2a44" vertical={false} />
-                <XAxis dataKey="conceptSlug" stroke="#94A3B8" fontSize={11} angle={-25} textAnchor="end" height={60} />
-                <YAxis stroke="#94A3B8" fontSize={11} />
-                <Tooltip
-                  contentStyle={{ background: '#0F172A', border: '1px solid #334155', borderRadius: 8 }}
-                  labelStyle={{ color: '#A5B4FC' }}
-                />
-                <Bar dataKey="queryCount" fill="#6366F1" />
+            <div style={chartBox}>
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={bottlenecks.data.slice(0, 6)} margin={{ top: 10, right: 10, bottom: 0, left: -20 }}>
+                  <CartesianGrid stroke={colors.border} vertical={false} />
+                  <XAxis dataKey="conceptSlug" stroke={colors.textMuted} fontSize={11} tickLine={false} axisLine={false} angle={-20} textAnchor="end" height={62} />
+                  <YAxis stroke={colors.textMuted} fontSize={11} tickLine={false} axisLine={false} />
+                  <Tooltip contentStyle={tooltipStyle} />
+                  <Bar dataKey="queryCount" name="Requêtes" fill={colors.primary} radius={[8, 8, 0, 0]} />
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+          )}
+        </Card>
+
+        <Card title="Étudiants à risque" subtitle="Raisons principales du score de risque" accent="orange">
+          {atRisk.isLoading && <p style={dim}>Chargement...</p>}
+          {atRisk.error && <p style={err}>Données indisponibles.</p>}
+          {atRisk.data?.length === 0 && <p style={dim}>Aucun étudiant à risque détecté cette semaine.</p>}
+          {atRisk.data && (
+            <div style={riskList}>
+              {atRisk.data.map((student) => (
+                <article key={student.studentId} style={riskCard}>
+                  <div style={riskTopline}>
+                    <div style={avatar}>{initials(student.fullName)}</div>
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <strong style={studentName}>{student.fullName}</strong>
+                      <div style={dim}>{student.school} · vu {new Date(student.lastSeen).toLocaleDateString('fr-FR')}</div>
+                    </div>
+                    <span style={riskBadge(student.riskScore)}>{Math.round(student.riskScore * 100)} %</span>
+                  </div>
+                  <div style={reasons}>
+                    {(student.reasons ?? ['Raison non fournie par le modèle']).slice(0, 2).map((reason) => (
+                      <span key={reason} style={reasonPill}>{reason}</span>
+                    ))}
+                  </div>
+                </article>
+              ))}
+            </div>
+          )}
+        </Card>
+
+        <Card title="Notes Moodle - TP Python" subtitle="Distribution après correction" accent="green">
+          <div style={chartBox}>
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={pythonGradeDistribution} margin={{ top: 10, right: 10, bottom: 0, left: -20 }}>
+                <CartesianGrid stroke={colors.border} vertical={false} />
+                <XAxis dataKey="bucket" stroke={colors.textMuted} fontSize={11} tickLine={false} axisLine={false} />
+                <YAxis stroke={colors.textMuted} fontSize={11} tickLine={false} axisLine={false} />
+                <Tooltip contentStyle={tooltipStyle} />
+                <Bar dataKey="students" name="Étudiants" fill={colors.accentGreen} radius={[8, 8, 0, 0]} />
               </BarChart>
             </ResponsiveContainer>
-          )}
+          </div>
         </Card>
 
-        <Card title="Étudiants à risque" subtitle="Modèle ML — combine score Wd + engagement récent">
-          {atRisk.isLoading && <p style={dim}>Chargement…</p>}
-          {atRisk.error && <p style={err}>Données indisponibles.</p>}
-          {atRisk.data && (
-            <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
-              {atRisk.data.map((s) => (
-                <li key={s.studentId} style={row}>
-                  <div style={{ flex: 1 }}>
-                    <div style={{ fontWeight: 600 }}>{s.fullName}</div>
-                    <div style={dim}>{s.school} · vu {new Date(s.lastSeen).toLocaleDateString('fr-FR')}</div>
-                  </div>
-                  <div style={riskBadge(s.riskScore)}>{Math.round(s.riskScore * 100)} %</div>
-                </li>
-              ))}
-            </ul>
-          )}
-        </Card>
-
-        <Card title="Tableaux Grafana" subtitle="Volumes, distributions, sessions">
-          <iframe
-            src={`http://localhost:3001/d-solo/professor/professor?orgId=1&theme=dark&kiosk`}
-            style={{ width: '100%', height: 320, border: 0, borderRadius: 8 }}
-          />
-          <p style={dim}>
-            <strong>Grafana indisponible ?</strong> Lance-le en local :
-            <br /><code>docker run -d -p 3001:3000 -v "$PWD/infra/grafana/provisioning:/etc/grafana/provisioning" grafana/grafana</code>
-            <br />puis configure une datasource Postgres (<code>host.docker.internal:5432 / echoid_dev / postgres / postgres</code>).
-            Les dashboards JSON dans <code>infra/grafana/provisioning/dashboards/</code> sont auto-chargés.
-          </p>
+        <Card title="Soumissions à examiner" subtitle="Similarité élevée sur réponses Python" accent="red">
+          {cheating.isLoading && <p style={dim}>Chargement...</p>}
+          {cheating.data?.map((cluster) => (
+            <article key={cluster.clusterId} style={clusterCard}>
+              <div style={clusterHeader}>
+                <Donut pct={Math.round(cluster.avgSimilarity * 100)} color={colors.accentRed} caption="similarité" />
+                <div style={{ flex: 1 }}>
+                  <Badge tone="red">Cluster {cluster.clusterId}</Badge>
+                  <h3 style={clusterTitle}>{cluster.module} - {cluster.assignmentTitle}</h3>
+                  <p style={clusterText}>
+                    {cluster.students.map((student) => student.name).join(', ')} · fenêtre de {cluster.submittedWithinMinutes} min.
+                  </p>
+                </div>
+              </div>
+              <ul style={evidenceList}>
+                {cluster.evidence.map((item) => (
+                  <li key={item}>{item}</li>
+                ))}
+              </ul>
+              <div style={recommendation}>{cluster.recommendation}</div>
+            </article>
+          ))}
+          <InsightBlock insight={professorInsights.cheating} accent="red" />
         </Card>
       </div>
     </Shell>
   );
 }
 
-const grid: React.CSSProperties = { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 };
-const pill = (active: boolean): React.CSSProperties => ({
-  background: active ? '#6366F1' : '#1E293B',
-  color: active ? '#fff' : '#94A3B8',
-  border: '1px solid #334155', borderRadius: 999, padding: '6px 14px',
-  cursor: 'pointer', fontWeight: 600, fontSize: 13,
-});
-const row: React.CSSProperties = {
-  display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-  padding: '10px 0', borderBottom: '1px solid #1f2a44',
+function initials(name: string) {
+  return name
+    .split(/\s+/)
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((part) => part[0]?.toUpperCase())
+    .join('');
+}
+
+const sectionHeader: React.CSSProperties = {
+  alignItems: 'center',
+  display: 'flex',
+  gap: spacing.md,
+  marginBottom: spacing.md,
 };
-const dim: React.CSSProperties = { color: '#94A3B8', fontSize: 12 };
-const err: React.CSSProperties = { color: '#F87171', fontSize: 13 };
-const riskBadge = (r: number): React.CSSProperties => ({
-  background: r > 0.7 ? '#F87171' : r > 0.4 ? '#FBBF24' : '#22C55E',
-  color: '#0F172A', borderRadius: 999, padding: '4px 10px', fontWeight: 800, fontSize: 12,
+
+const sectionTitle: React.CSSProperties = {
+  color: colors.text,
+  fontSize: fontSize.xl,
+  fontWeight: 900,
+  margin: 0,
+};
+
+const grid: React.CSSProperties = {
+  display: 'grid',
+  gap: spacing.lg,
+  gridTemplateColumns: 'repeat(auto-fit, minmax(420px, 1fr))',
+};
+
+const chartBox: React.CSSProperties = {
+  height: 280,
+  minWidth: 0,
+};
+
+const riskList: React.CSSProperties = {
+  display: 'grid',
+  gap: spacing.md,
+};
+
+const riskCard: React.CSSProperties = {
+  background: colors.surfaceMuted,
+  borderRadius: radius.md,
+  padding: spacing.md,
+};
+
+const riskTopline: React.CSSProperties = {
+  alignItems: 'center',
+  display: 'flex',
+  gap: spacing.md,
+};
+
+const avatar: React.CSSProperties = {
+  alignItems: 'center',
+  background: colors.primarySoft,
+  borderRadius: radius.pill,
+  color: colors.primary,
+  display: 'grid',
+  flex: '0 0 auto',
+  fontSize: fontSize.sm,
+  fontWeight: 900,
+  height: 42,
+  justifyItems: 'center',
+  width: 42,
+};
+
+const studentName: React.CSSProperties = {
+  color: colors.text,
+  display: 'block',
+  overflow: 'hidden',
+  textOverflow: 'ellipsis',
+  whiteSpace: 'nowrap',
+};
+
+const reasons: React.CSSProperties = {
+  display: 'flex',
+  flexWrap: 'wrap',
+  gap: spacing.sm,
+  marginTop: spacing.md,
+};
+
+const reasonPill: React.CSSProperties = {
+  background: colors.surface,
+  border: `1px solid ${colors.border}`,
+  borderRadius: radius.pill,
+  color: colors.textMuted,
+  fontSize: fontSize.sm,
+  fontWeight: 700,
+  maxWidth: '100%',
+  overflow: 'hidden',
+  padding: '6px 10px',
+  textOverflow: 'ellipsis',
+  whiteSpace: 'nowrap',
+};
+
+const clusterCard: React.CSSProperties = {
+  background: colors.surfaceMuted,
+  borderRadius: radius.md,
+  padding: spacing.lg,
+};
+
+const clusterHeader: React.CSSProperties = {
+  alignItems: 'center',
+  display: 'flex',
+  gap: spacing.lg,
+};
+
+const clusterTitle: React.CSSProperties = {
+  color: colors.text,
+  fontSize: fontSize.xl,
+  fontWeight: 900,
+  margin: `${spacing.sm}px 0 ${spacing.xs}px`,
+};
+
+const clusterText: React.CSSProperties = {
+  color: colors.textMuted,
+  fontSize: fontSize.md,
+  lineHeight: 1.45,
+  margin: 0,
+};
+
+const evidenceList: React.CSSProperties = {
+  color: colors.text,
+  display: 'grid',
+  fontSize: fontSize.md,
+  gap: spacing.sm,
+  lineHeight: 1.45,
+  margin: `${spacing.lg}px 0 0`,
+  paddingLeft: spacing.xl,
+};
+
+const recommendation: React.CSSProperties = {
+  background: colors.accentRedSoft,
+  borderRadius: radius.md,
+  color: colors.accentRed,
+  fontSize: fontSize.md,
+  fontWeight: 800,
+  lineHeight: 1.45,
+  marginTop: spacing.lg,
+  padding: spacing.md,
+};
+
+const dim: React.CSSProperties = {
+  color: colors.textMuted,
+  fontSize: fontSize.sm,
+};
+
+const err: React.CSSProperties = {
+  color: colors.accentRed,
+  fontSize: fontSize.sm,
+};
+
+const tooltipStyle: React.CSSProperties = {
+  background: colors.surface,
+  border: `1px solid ${colors.border}`,
+  borderRadius: radius.md,
+  boxShadow: '0 12px 24px rgba(11, 27, 69, 0.10)',
+  color: colors.text,
+};
+
+const riskBadge = (risk: number): React.CSSProperties => ({
+  background: risk > 0.7 ? colors.accentRedSoft : risk > 0.4 ? colors.accentOrangeSoft : colors.accentGreenSoft,
+  borderRadius: radius.pill,
+  color: risk > 0.7 ? colors.accentRed : risk > 0.4 ? colors.accentOrange : colors.accentGreen,
+  flex: '0 0 auto',
+  fontSize: fontSize.sm,
+  fontWeight: 900,
+  padding: '6px 10px',
 });

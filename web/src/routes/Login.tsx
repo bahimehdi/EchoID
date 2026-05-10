@@ -1,6 +1,7 @@
 import { useState, FormEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { api, session } from '../lib/api';
+import { colors, fontSize, radius, shadow, spacing } from '../lib/theme';
 
 export default function Login() {
   const [email, setEmail] = useState('');
@@ -14,6 +15,7 @@ export default function Login() {
     setError(null);
     setLoading(true);
     try {
+      session.clear();
       const r = await api.post('/api/auth/login', { email, password });
       const env = r.data;
       if (!env.success) throw new Error(env.message ?? 'Connexion échouée');
@@ -31,10 +33,29 @@ export default function Login() {
   };
 
   return (
-    <div style={{ minHeight: '100vh', display: 'grid', placeItems: 'center', padding: 24 }}>
+    <main style={page}>
+      <section style={brandPanel}>
+        <div style={logo}>UIT</div>
+        <p style={eyebrow}>EchoID Nexus</p>
+        <h1 style={title}>Console UIT</h1>
+        <p style={subtitle}>Pilotage pédagogique pour enseignants et administrateurs ENSAK.</p>
+      </section>
+
       <form onSubmit={submit} style={card}>
-        <h1 style={{ margin: 0, fontSize: 28 }}>EchoID Nexus</h1>
-        <p style={{ color: '#94A3B8', marginTop: 4 }}>Console enseignants & administrateurs</p>
+        <div>
+          <p style={formEyebrow}>Connexion</p>
+          <h2 style={formTitle}>Accès sécurisé</h2>
+        </div>
+
+        <button type="button" style={ssoBtn}>
+          Continuer avec SSO UIT
+        </button>
+
+        <div style={divider}>
+          <span style={line} />
+          <span style={dividerText}>ou</span>
+          <span style={line} />
+        </div>
 
         <label style={lbl}>Email</label>
         <input
@@ -59,25 +80,165 @@ export default function Login() {
 
         {error && <p style={errStyle}>{error}</p>}
 
-        <button type="submit" disabled={loading} style={btn}>
-          {loading ? 'Connexion…' : 'Se connecter'}
+        <button type="submit" disabled={loading} style={{ ...btn, opacity: loading ? 0.7 : 1 }}>
+          {loading ? 'Connexion...' : 'Se connecter'}
         </button>
       </form>
-    </div>
+    </main>
   );
 }
 
+const page: React.CSSProperties = {
+  alignItems: 'center',
+  background: colors.bg,
+  boxSizing: 'border-box',
+  color: colors.text,
+  display: 'grid',
+  gap: spacing.xxl,
+  gridTemplateColumns: 'minmax(260px, 0.9fr) minmax(360px, 420px)',
+  minHeight: '100vh',
+  padding: 'clamp(24px, 5vw, 72px)',
+};
+
+const brandPanel: React.CSSProperties = {
+  maxWidth: 560,
+};
+
+const logo: React.CSSProperties = {
+  alignItems: 'center',
+  background: colors.primary,
+  borderRadius: radius.lg,
+  boxShadow: shadow.raised,
+  color: '#fff',
+  display: 'grid',
+  fontSize: fontSize.xl,
+  fontWeight: 900,
+  height: 74,
+  justifyItems: 'center',
+  letterSpacing: 0.8,
+  width: 74,
+};
+
+const eyebrow: React.CSSProperties = {
+  color: colors.primary,
+  fontSize: fontSize.sm,
+  fontWeight: 900,
+  letterSpacing: 0.8,
+  margin: `${spacing.xl}px 0 ${spacing.sm}px`,
+  textTransform: 'uppercase',
+};
+
+const title: React.CSSProperties = {
+  color: colors.text,
+  fontSize: 48,
+  fontWeight: 900,
+  letterSpacing: 0,
+  lineHeight: 1,
+  margin: 0,
+};
+
+const subtitle: React.CSSProperties = {
+  color: colors.textMuted,
+  fontSize: fontSize.lg,
+  lineHeight: 1.55,
+  margin: `${spacing.lg}px 0 0`,
+  maxWidth: 440,
+};
+
 const card: React.CSSProperties = {
-  background: '#1E293B', borderRadius: 16, padding: 32, width: 380,
-  display: 'flex', flexDirection: 'column', gap: 8,
+  background: colors.surface,
+  borderRadius: radius.xl,
+  boxShadow: shadow.raised,
+  boxSizing: 'border-box',
+  display: 'flex',
+  flexDirection: 'column',
+  gap: spacing.sm,
+  padding: spacing.xxl,
+  width: '100%',
 };
-const lbl: React.CSSProperties = { color: '#94A3B8', fontSize: 12, marginTop: 12, textTransform: 'uppercase', letterSpacing: 0.5 };
+
+const formEyebrow: React.CSSProperties = {
+  color: colors.primary,
+  fontSize: fontSize.xs,
+  fontWeight: 900,
+  letterSpacing: 0.7,
+  margin: 0,
+  textTransform: 'uppercase',
+};
+
+const formTitle: React.CSSProperties = {
+  color: colors.text,
+  fontSize: fontSize.xxl,
+  fontWeight: 900,
+  margin: `${spacing.xs}px 0 ${spacing.md}px`,
+};
+
+const ssoBtn: React.CSSProperties = {
+  background: colors.primary,
+  border: 0,
+  borderRadius: radius.md,
+  color: '#fff',
+  cursor: 'pointer',
+  fontSize: fontSize.md,
+  fontWeight: 900,
+  padding: '13px 16px',
+};
+
+const divider: React.CSSProperties = {
+  alignItems: 'center',
+  display: 'flex',
+  gap: spacing.md,
+  margin: `${spacing.md}px 0 ${spacing.xs}px`,
+};
+
+const line: React.CSSProperties = {
+  background: colors.border,
+  flex: 1,
+  height: 1,
+};
+
+const dividerText: React.CSSProperties = {
+  color: colors.textSubtle,
+  fontSize: fontSize.sm,
+  fontWeight: 800,
+};
+
+const lbl: React.CSSProperties = {
+  color: colors.textMuted,
+  fontSize: fontSize.xs,
+  fontWeight: 900,
+  letterSpacing: 0.6,
+  marginTop: spacing.sm,
+  textTransform: 'uppercase',
+};
+
 const inp: React.CSSProperties = {
-  background: '#0F172A', color: '#F8FAFC', border: '1px solid #334155',
-  borderRadius: 8, padding: '10px 12px', fontSize: 14, outline: 'none',
+  background: colors.surfaceMuted,
+  border: `1px solid ${colors.border}`,
+  borderRadius: radius.md,
+  color: colors.text,
+  fontSize: fontSize.md,
+  outline: 'none',
+  padding: '12px 14px',
 };
+
 const btn: React.CSSProperties = {
-  background: '#6366F1', color: '#fff', border: 'none', borderRadius: 8,
-  padding: '12px 16px', fontWeight: 700, cursor: 'pointer', marginTop: 16,
+  background: colors.primary,
+  border: 'none',
+  borderRadius: radius.md,
+  color: '#fff',
+  cursor: 'pointer',
+  fontSize: fontSize.md,
+  fontWeight: 900,
+  marginTop: spacing.lg,
+  padding: '13px 16px',
 };
-const errStyle: React.CSSProperties = { color: '#F87171', fontSize: 13, marginTop: 8 };
+
+const errStyle: React.CSSProperties = {
+  background: colors.accentRedSoft,
+  borderRadius: radius.md,
+  color: colors.accentRed,
+  fontSize: fontSize.sm,
+  margin: `${spacing.sm}px 0 0`,
+  padding: spacing.md,
+};

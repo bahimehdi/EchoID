@@ -9,6 +9,9 @@ export const api = axios.create({
 });
 
 api.interceptors.request.use((cfg) => {
+  if (cfg.url?.startsWith('/api/auth/')) {
+    return cfg;
+  }
   const t = localStorage.getItem(TOKEN_KEY);
   if (t) cfg.headers.Authorization = `Bearer ${t}`;
   return cfg;

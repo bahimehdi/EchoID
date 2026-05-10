@@ -22,6 +22,7 @@ Thumbs.db
 **/target/
 **/__pycache__/
 *.pyc
+*.tsbuildinfo
 
 # JVM crash dumps + log spew
 hs_err_pid*.log
