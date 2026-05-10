@@ -1,0 +1,21 @@
+{
+  "concept_slug": "proba-bayes",
+  "query": "théorème de bayes probabilité cours",
+  "videos": [
+    {
+      "title": "Théorème de Bayes",
+      "channel": "Maths-Sup-Spé",
+      "url": "https://www.youtube.com/watch?v=NYWnaKs3iu0"
+    },
+    {
+      "title": "Comprendre le Théorème de Bayes — application pratique",
+      "channel": "Maths Concrètes",
+      "url": "https://www.youtube.com/watch?v=xzCtZLiuCL8"
+    },
+    {
+      "title": "Formule de Bayes — cours et démonstration",
+      "channel": "Cours Probabilités",
+      "url": "https://www.youtube.com/watch?v=gHYM7l9UzN8"
+    }
+  ]
+}

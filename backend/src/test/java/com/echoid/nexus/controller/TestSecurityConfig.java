@@ -1,8 +1,18 @@
 package com.echoid.nexus.controller;
 
+import com.echoid.nexus.security.JwtAuthenticationFilter;
+import com.echoid.nexus.service.JwtService;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import jakarta.servlet.FilterChain;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import org.mockito.Mockito;
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.context.annotation.Bean;
+import org.springframework.web.filter.OncePerRequestFilter;
+
+import java.io.IOException;
 import org.springframework.http.MediaType;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -20,6 +30,31 @@ import java.util.Map;
 @TestConfiguration
 @EnableWebSecurity
 public class TestSecurityConfig {
+
+    /**
+     * @WebMvcTest auto-detects {@link JwtAuthenticationFilter} (a @Component), which
+     * pulls in {@link JwtService}. Provide stubs so slice-test contexts boot.
+     */
+    @Bean
+    public JwtService jwtService() {
+        return Mockito.mock(JwtService.class);
+    }
+
+    /**
+     * Replace the real filter with a no-op that always continues the chain.
+     * The real one needs JwtService + a populated SecurityContext; in slice tests
+     * we delegate auth to {@code @WithMockUser} instead.
+     */
+    @Bean
+    public JwtAuthenticationFilter jwtAuthenticationFilter() {
+        return new JwtAuthenticationFilter(Mockito.mock(JwtService.class)) {
+            @Override
+            protected void doFilterInternal(HttpServletRequest req, HttpServletResponse res, FilterChain chain)
+                    throws ServletException, IOException {
+                chain.doFilter(req, res);
+            }
+        };
+    }
 
     @Bean
     public SecurityFilterChain testSecurityFilterChain(HttpSecurity http) throws Exception {

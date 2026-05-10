@@ -136,6 +136,7 @@ public class AuthService {
                 .accessToken(accessToken)
                 .refreshToken(refreshToken)
                 .expiresIn(jwtService.getAccessTokenTtlMillis())
+                .user(toProfile(user))
                 .build();
     }
 

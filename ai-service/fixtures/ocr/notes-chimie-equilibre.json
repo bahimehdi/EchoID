@@ -1,0 +1,12 @@
+{
+  "fixture_slug": "notes-chimie-equilibre",
+  "course_id": "ENSAK-CP2-S3-05",
+  "ocr_status": "OK",
+  "page_count": 1,
+  "extracted_text": "Chapitre 4 — Équilibres chimiques\n\nÀ température fixée, une réaction réversible atteint un état d'équilibre où les concentrations restent stables. La constante d'équilibre K dépend uniquement de T. Si on perturbe le système (variation de T, P, ou C), il évolue pour minimiser la perturbation (loi de Le Chatelier).",
+  "indexed_concepts": [
+    "chimie-equilibre"
+  ],
+  "confidence": 0.96,
+  "processing_ms": 980
+}

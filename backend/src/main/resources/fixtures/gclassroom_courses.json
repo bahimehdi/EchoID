@@ -1,0 +1,202 @@
+[
+  {
+    "id": "87ff8a8a-8652-351d-a5ba-57d660b5ebbf",
+    "title": "Architecture des Ordinateurs & Systèmes d'exploitation",
+    "lmsSource": "GOOGLE_CLASSROOM",
+    "school": "ENSA",
+    "semester": "S1",
+    "isActive": true,
+    "sections": [
+      {
+        "id": "4e9e79ed-ce61-3b69-a311-57d06396bf46",
+        "title": "Cours",
+        "orderIndex": 1
+      },
+      {
+        "id": "bb7e9bc5-69f8-3ad8-aace-e7f293d91973",
+        "title": "Travaux dirigés",
+        "orderIndex": 2
+      },
+      {
+        "id": "9def826d-0d18-38b9-afd0-5791fb82056c",
+        "title": "Contrôles et examens",
+        "orderIndex": 3
+      }
+    ]
+  },
+  {
+    "id": "7584ba71-78b0-364b-9c2b-80ba4c6c511f",
+    "title": "TEC : Français",
+    "lmsSource": "GOOGLE_CLASSROOM",
+    "school": "ENSA",
+    "semester": "S1",
+    "isActive": true,
+    "sections": [
+      {
+        "id": "f8c2b893-837c-3a0d-bfae-5f0e15ea2c42",
+        "title": "Cours",
+        "orderIndex": 1
+      },
+      {
+        "id": "d5000a26-c96b-3936-b9e0-e3ef4bed2d11",
+        "title": "Travaux dirigés",
+        "orderIndex": 2
+      },
+      {
+        "id": "553fb1e8-2711-33f9-b86e-bb7446ad4114",
+        "title": "Contrôles et examens",
+        "orderIndex": 3
+      }
+    ]
+  },
+  {
+    "id": "71a763cd-d677-3e2b-b022-a2b7552a7b1e",
+    "title": "Algorithmique & Programmation (Python)",
+    "lmsSource": "GOOGLE_CLASSROOM",
+    "school": "ENSA",
+    "semester": "S2",
+    "isActive": true,
+    "sections": [
+      {
+        "id": "5648d2b7-35c5-3560-a2fa-9a8195a0d370",
+        "title": "Cours",
+        "orderIndex": 1
+      },
+      {
+        "id": "4154dea5-85cf-3d19-8909-6844b2928669",
+        "title": "Travaux dirigés",
+        "orderIndex": 2
+      },
+      {
+        "id": "ae3167c8-74de-337c-ae8b-124feb9a2445",
+        "title": "Contrôles et examens",
+        "orderIndex": 3
+      }
+    ]
+  },
+  {
+    "id": "55e0cd8a-96c9-3363-848b-eedef13152e8",
+    "title": "Langue : Anglais",
+    "lmsSource": "GOOGLE_CLASSROOM",
+    "school": "ENSA",
+    "semester": "S2",
+    "isActive": true,
+    "sections": [
+      {
+        "id": "62bed9eb-2885-3b5d-b24b-2d28faedd210",
+        "title": "Cours",
+        "orderIndex": 1
+      },
+      {
+        "id": "a2db7e86-1076-3846-a1a1-50f94b6e714e",
+        "title": "Travaux dirigés",
+        "orderIndex": 2
+      },
+      {
+        "id": "072da29d-54bc-34ac-8bb0-ebe3a37bd56d",
+        "title": "Contrôles et examens",
+        "orderIndex": 3
+      }
+    ]
+  },
+  {
+    "id": "66f95d4d-26a4-329d-b522-8a9ca6704cc3",
+    "title": "TEC : Français",
+    "lmsSource": "GOOGLE_CLASSROOM",
+    "school": "ENSA",
+    "semester": "S1",
+    "isActive": true,
+    "sections": [
+      {
+        "id": "3b83815f-d909-3ad8-a4ed-a56bae4b8c89",
+        "title": "Cours",
+        "orderIndex": 1
+      },
+      {
+        "id": "74046749-3d45-365a-9835-634010f00c9d",
+        "title": "Travaux dirigés",
+        "orderIndex": 2
+      },
+      {
+        "id": "080df73f-f026-3c38-831c-fd7e7dd5786a",
+        "title": "Contrôles et examens",
+        "orderIndex": 3
+      }
+    ]
+  },
+  {
+    "id": "ab4963e8-252d-3649-b67d-8d2f219e3ec7",
+    "title": "Langue : Anglais",
+    "lmsSource": "GOOGLE_CLASSROOM",
+    "school": "ENSA",
+    "semester": "S1",
+    "isActive": true,
+    "sections": [
+      {
+        "id": "d1f80cc5-b3cc-332e-b752-3c915eccc0bb",
+        "title": "Cours",
+        "orderIndex": 1
+      },
+      {
+        "id": "7ee31942-04c7-34d1-98b0-a52498362bca",
+        "title": "Travaux dirigés",
+        "orderIndex": 2
+      },
+      {
+        "id": "a2e28a72-41b3-3c26-ab6f-d218c985ffbe",
+        "title": "Contrôles et examens",
+        "orderIndex": 3
+      }
+    ]
+  },
+  {
+    "id": "eb1b0848-3191-36af-be23-fab20307c1d4",
+    "title": "Électronique analogique et numérique",
+    "lmsSource": "GOOGLE_CLASSROOM",
+    "school": "ENSA",
+    "semester": "S2",
+    "isActive": true,
+    "sections": [
+      {
+        "id": "254fed2b-8537-31df-a50f-38f1b34847bd",
+        "title": "Cours",
+        "orderIndex": 1
+      },
+      {
+        "id": "74288f56-cb3c-31d7-ab34-bebea5a458a5",
+        "title": "Travaux dirigés",
+        "orderIndex": 2
+      },
+      {
+        "id": "93b49305-2ff3-3ea1-a9c7-e97c5728c14c",
+        "title": "Contrôles et examens",
+        "orderIndex": 3
+      }
+    ]
+  },
+  {
+    "id": "6384bb23-7248-31c9-af1a-80bae4ecd508",
+    "title": "Informatique 4",
+    "lmsSource": "GOOGLE_CLASSROOM",
+    "school": "ENSA",
+    "semester": "S2",
+    "isActive": true,
+    "sections": [
+      {
+        "id": "283d38c5-a5ce-30a7-8a88-29ae6212037c",
+        "title": "Cours",
+        "orderIndex": 1
+      },
+      {
+        "id": "da846e2a-2333-336d-9c74-5d575b68a746",
+        "title": "Travaux dirigés",
+        "orderIndex": 2
+      },
+      {
+        "id": "d5d2570d-9da0-3f2e-adc4-1cfb520771a9",
+        "title": "Contrôles et examens",
+        "orderIndex": 3
+      }
+    ]
+  }
+]

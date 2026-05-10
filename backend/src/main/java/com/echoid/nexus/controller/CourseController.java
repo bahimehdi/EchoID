@@ -11,6 +11,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -40,8 +41,9 @@ public class CourseController {
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Course list returned"),
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "401", description = "Not authenticated")
     })
-    public ResponseEntity<ApiResponse<List<CourseDto>>> listCourses() {
-        return ResponseEntity.ok(ApiResponse.ok(courseService.listCourses()));
+    public ResponseEntity<ApiResponse<List<CourseDto>>> listCourses(Authentication authentication) {
+        UUID studentId = (UUID) authentication.getPrincipal();
+        return ResponseEntity.ok(ApiResponse.ok(courseService.listCourses(studentId)));
     }
 
     /**
@@ -56,8 +58,10 @@ public class CourseController {
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "Course not found")
     })
     public ResponseEntity<ApiResponse<CourseDetailDto>> getCourseDetail(@PathVariable UUID id) {
-        return ResponseEntity.status(HttpStatus.NOT_IMPLEMENTED)
-                .body(ApiResponse.error("Not implemented — course detail with sections pending"));
+        return courseService.getCourse(id)
+                .map(c -> ResponseEntity.ok(ApiResponse.ok(c)))
+                .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND)
+                        .body(ApiResponse.error("Course not found")));
     }
 
     /**

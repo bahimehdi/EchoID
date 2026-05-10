@@ -67,19 +67,36 @@ services:
     restart: on-failure
 
   # ---------------------------------------------------------
-  # FRONTEND WEB - React (port 3000)
+  # FRONTEND WEB - Vite (port 3000)
   # Professor and Admin dashboard.
   # Does not depend on DB directly - only on backend.
   # ---------------------------------------------------------
   web:
     build:
-      context: ../../frontend
+      context: ../../web
       dockerfile: Dockerfile
     container_name: echoid_web
-    env_file:
-      - ../env/.env
     ports:
       - "3000:80"
+    depends_on:
+      - backend
+    networks:
+      - echoid_net
+
+  # ---------------------------------------------------------
+  # STUDENT APP - Expo Web export (port 19006)
+  # Student-facing React Native Web app.
+  # Calls backend directly at http://localhost:8080.
+  # ---------------------------------------------------------
+  student:
+    build:
+      context: ../../frontend
+      dockerfile: Dockerfile
+      args:
+        EXPO_PUBLIC_API_BASE_URL: http://localhost:8080
+    container_name: echoid_student
+    ports:
+      - "19006:80"
     depends_on:
       - backend
     networks:

@@ -152,12 +152,17 @@ class OpenApiContractTest {
                 .andExpect(status().isOk()).andReturn();
         String json = result.getResponse().getContentAsString();
 
+        // AI proxy endpoints became passthroughs (Map<String,Object>) once the
+        // ai-service became the contract owner — see DEMO_FALLBACKS.md.
+        // Their typed DTOs (ExplainRequest, VideoSearchRequest, ExplanationCardDto,
+        // VideoResultDto, OcrResultDto) are no longer referenced from controllers
+        // and don't appear in the OpenAPI spec.
         for (String dto : new String[]{
                 "RegisterRequest", "LoginRequest", "RefreshRequest", "EventRequest",
-                "ExplainRequest", "VideoSearchRequest", "DeviceTokenRequest",
+                "DeviceTokenRequest",
                 "AuthTokenDto", "UserProfileDto", "CourseDto", "CourseDetailDto",
-                "CourseSectionDto", "AssignmentDto", "ExplanationCardDto",
-                "VideoResultDto", "OcrResultDto", "WdResponseDto", "WdBreakdownItem",
+                "CourseSectionDto", "AssignmentDto",
+                "WdResponseDto", "WdBreakdownItem",
                 "WdHistoryPoint", "NotificationDto", "AdminHealthDto"
         }) {
             assertThat(json).as("Schema %s should be present", dto).contains(dto);

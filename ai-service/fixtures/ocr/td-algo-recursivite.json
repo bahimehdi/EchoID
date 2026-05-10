@@ -1,0 +1,12 @@
+{
+  "fixture_slug": "td-algo-recursivite",
+  "course_id": "ENSAK-CP1-S2-06",
+  "ocr_status": "OK",
+  "page_count": 1,
+  "extracted_text": "TD 4 — Récursivité\n\nExercice 1 : Écrire une fonction récursive `factorielle(n)` qui calcule n!.\nExercice 2 : Écrire `fibonacci(n)` puis comparer son temps d'exécution avec une version mémoïsée (`@lru_cache`).\nExercice 3 : Convertir la fonction du 1) en version itérative.",
+  "indexed_concepts": [
+    "algo-recursivite"
+  ],
+  "confidence": 0.93,
+  "processing_ms": 1090
+}

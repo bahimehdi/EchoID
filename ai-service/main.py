@@ -1,62 +1,63 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
+import logging
 import time
 
 import explain
 import ocr
-from settings import get_settings
+import videos
 import workload
+import recommendations
+import fixture_loader
+from settings import get_settings
+
+logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(name)s — %(message)s")
+log = logging.getLogger("echoid.ai")
 
 settings = get_settings()
 
 
-# ── Startup / shutdown events ─────────────────────────────────
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    print("EchoID AI service starting...")
+    log.info("EchoID AI service starting...")
+    fixture_loader.load_all()
     yield
-    print("EchoID AI service shutting down.")
+    log.info("EchoID AI service shutting down.")
 
 
-# ── App definition ────────────────────────────────────────────
 app = FastAPI(
     title="EchoID Nexus — AI Microservice",
-    description="AI engine for concept explanation, OCR, and workload analysis.",
-    version="0.1.0",
+    description="Fixture-backed explainer / OCR / video endpoints for the demo. "
+    "Same shapes as production; swap in live LLM / Tesseract / YouTube Data API behind the cache.",
+    version="0.2.0",
     lifespan=lifespan,
 )
 
-# Allow the backend (Spring Boot) to call this service
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],       # restrict to backend URL in production
+    allow_origins=["*"],
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-# ── Routers ───────────────────────────────────────────────────
-app.include_router(explain.router,  prefix="/explain",  tags=["Explain"])
-app.include_router(ocr.router,      prefix="/ocr",      tags=["OCR"])
+app.include_router(explain.router, prefix="/explain", tags=["Explain"])
+app.include_router(ocr.router, prefix="/ocr", tags=["OCR"])
+app.include_router(videos.router, prefix="/videos", tags=["Videos"])
 app.include_router(workload.router, prefix="/workload", tags=["Workload"])
+app.include_router(recommendations.router, prefix="/recommendations", tags=["Recommendations"])
 
 
-# ── Root ──────────────────────────────────────────────────────
 @app.get("/", tags=["Health"])
 def root():
-    return {
-        "message": "EchoID AI Microservice is running.",
-        "docs": "/docs",
-    }
+    return {"message": "EchoID AI Microservice is running.", "docs": "/docs"}
 
 
-# ── Health check ──────────────────────────────────────────────
-# The backend calls this to verify the AI service is reachable.
 @app.get("/health", tags=["Health"])
 def health_check():
     return {
         "status": "ok",
         "service": "echoid-ai",
-        "version": "0.1.0",
+        "version": "0.2.0",
         "timestamp": int(time.time()),
     }

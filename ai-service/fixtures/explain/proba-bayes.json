@@ -1,0 +1,32 @@
+{
+  "concept_slug": "proba-bayes",
+  "course_id": "ENSAK-CP2-S4-02",
+  "display_name": "Théorème de Bayes",
+  "levels": {
+    "beginner": {
+      "explanation": "Bayes : P(A|B) = P(B|A)·P(A) / P(B). Comment mettre à jour une probabilité quand on a une nouvelle info.",
+      "key_points": [
+        "P(A|B) = P(B|A)·P(A) / P(B)",
+        "A priori vs a posteriori",
+        "Inverse une conditionnelle"
+      ]
+    },
+    "visual": {
+      "explanation": "Test médical à 99% de sensibilité, maladie rare (1‰) : un test positif ne donne que ~9% de chance d'être malade. La rareté écrase la précision.",
+      "key_points": [
+        "Prévalence compte énormément",
+        "Faux positifs explosent si rare",
+        "Bayes redresse l'intuition"
+      ]
+    },
+    "advanced": {
+      "explanation": "P(Aᵢ|B) = P(B|Aᵢ)·P(Aᵢ) / Σⱼ P(B|Aⱼ)·P(Aⱼ). Inférence bayésienne : posterior ∝ likelihood × prior. Familles conjuguées.",
+      "key_points": [
+        "Posterior ∝ Likelihood × Prior",
+        "Familles conjuguées",
+        "MAP"
+      ]
+    }
+  },
+  "videos_slug": "proba-bayes"
+}

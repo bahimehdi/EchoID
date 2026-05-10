@@ -28,6 +28,12 @@ public class CourseDetailDto {
     @Schema(description = "University school", example = "ENSA")
     private String school;
 
+    @Schema(description = "Academic semester", example = "S1")
+    private String semester;
+
+    @Schema(description = "Whether the course is currently active", example = "true")
+    private boolean isActive;
+
     @Schema(description = "Ordered list of course sections/chapters")
     private List<CourseSectionDto> sections;
 }

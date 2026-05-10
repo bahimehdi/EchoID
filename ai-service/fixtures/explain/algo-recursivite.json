@@ -1,0 +1,32 @@
+{
+  "concept_slug": "algo-recursivite",
+  "course_id": "ENSAK-CP1-S2-06",
+  "display_name": "Récursivité en Python",
+  "levels": {
+    "beginner": {
+      "explanation": "Une fonction récursive s'appelle elle-même sur un cas plus petit, jusqu'au cas de base. Exemple : factorielle(n) = n × factorielle(n−1), avec factorielle(0) = 1.",
+      "key_points": [
+        "Cas de base obligatoire",
+        "Appel sur cas plus petit",
+        "Convergence vers le cas de base"
+      ]
+    },
+    "visual": {
+      "explanation": "Matriochka : ouvre la grande, tu trouves une moyenne, ouvre-la... jusqu'à la dernière. Puis tu refermes en empilant les résultats.",
+      "key_points": [
+        "Pile d'exécution",
+        "Cas de base = dernière matriochka",
+        "Retour : on combine"
+      ]
+    },
+    "advanced": {
+      "explanation": "Pile d'appel limitée (~1000 par défaut). @lru_cache pour mémoïser (Fibonacci O(2ⁿ) → O(n)). Récursivité ↔ itération via pile explicite.",
+      "key_points": [
+        "RecursionError si trop profond",
+        "@lru_cache",
+        "Conversion en itératif"
+      ]
+    }
+  },
+  "videos_slug": "algo-recursivite"
+}

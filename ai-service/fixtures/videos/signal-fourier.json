@@ -1,0 +1,21 @@
+{
+  "concept_slug": "signal-fourier",
+  "query": "transformée de fourier discrète cours",
+  "videos": [
+    {
+      "title": "Cours sur la Transformée de Fourier",
+      "channel": "Cours d'Analyse",
+      "url": "https://www.youtube.com/watch?v=krdZu52HVn0"
+    },
+    {
+      "title": "Transformée de Fourier — définition et exercice",
+      "channel": "Maths PSI/MP",
+      "url": "https://www.youtube.com/watch?v=q9BqsTxruyM"
+    },
+    {
+      "title": "Bilan TFD (Transformée de Fourier discrète) et FFT",
+      "channel": "Signal & Systèmes",
+      "url": "https://www.youtube.com/watch?v=vBxzdheShAY"
+    }
+  ]
+}

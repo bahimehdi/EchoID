@@ -1,0 +1,32 @@
+{
+  "concept_slug": "chimie-equilibre",
+  "course_id": "ENSAK-CP2-S3-05",
+  "display_name": "Équilibres chimiques",
+  "levels": {
+    "beginner": {
+      "explanation": "Une réaction peut s'arrêter avant complétion : équilibre. La constante K mesure la position. K grand = beaucoup de produits.",
+      "key_points": [
+        "v_directe = v_inverse",
+        "K = [produits]/[réactifs]^coeffs",
+        "K dépend de T"
+      ]
+    },
+    "visual": {
+      "explanation": "Foule passant entre deux salles. À l'équilibre, les effectifs sont stables, mais le flux continue. K = rapport des effectifs.",
+      "key_points": [
+        "Équilibre dynamique",
+        "Le Chatelier : compensation",
+        "K dépend de T seulement"
+      ]
+    },
+    "advanced": {
+      "explanation": "ΔG = ΔG° + RT ln(Q). À l'équilibre, ΔG = 0 ⇒ K = exp(−ΔG°/RT). Le Chatelier : T, P, C déplacent l'équilibre.",
+      "key_points": [
+        "ΔG° = −RT ln K",
+        "Q vs K",
+        "Le Chatelier"
+      ]
+    }
+  },
+  "videos_slug": "chimie-equilibre"
+}

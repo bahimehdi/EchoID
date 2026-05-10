@@ -1,0 +1,32 @@
+{
+  "concept_slug": "thermo-1er-principe",
+  "course_id": "ENSAK-CP1-S2-05",
+  "display_name": "1er principe de la thermodynamique",
+  "levels": {
+    "beginner": {
+      "explanation": "Le 1er principe dit que l'énergie d'un système isolé se conserve. Si tu chauffes un gaz (Q) ou que tu travailles sur lui (W), son énergie interne ΔU augmente d'autant : ΔU = Q + W.",
+      "key_points": [
+        "Conservation de l'énergie",
+        "ΔU = Q + W",
+        "Q et W comptés positivement quand reçus"
+      ]
+    },
+    "visual": {
+      "explanation": "Imagine une boîte fermée avec un gaz. Tu ajoutes de la chaleur (flèche Q) et tu pousses un piston (flèche W). L'énergie interne U monte de Q + W exactement. Pas de fuite.",
+      "key_points": [
+        "Boîte = système",
+        "U = état interne, Q et W = flux",
+        "Diagramme P-V utile"
+      ]
+    },
+    "advanced": {
+      "explanation": "dU = δQ + δW. Sur un cycle fermé, ∮dU = 0 ⇒ Q + W = 0. Pour une transformation quasi-statique, δW = -P_ext dV. U est une fonction d'état; Q et W ne le sont pas.",
+      "key_points": [
+        "dU exacte, δQ et δW non exactes",
+        "∮dU = 0 sur un cycle",
+        "δW_qs = -P_ext dV"
+      ]
+    }
+  },
+  "videos_slug": "thermo-1er-principe"
+}

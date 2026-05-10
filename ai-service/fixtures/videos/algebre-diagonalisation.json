@@ -1,0 +1,21 @@
+{
+  "concept_slug": "algebre-diagonalisation",
+  "query": "diagonalisation matrice cours exercice",
+  "videos": [
+    {
+      "title": "Diagonaliser une matrice 3×3 — exercice (Maths Spé)",
+      "channel": "Maths-Et-Tiques",
+      "url": "https://www.youtube.com/watch?v=EUtdnH4jQpo"
+    },
+    {
+      "title": "Comment diagonaliser une matrice 3×3 — partie 3",
+      "channel": "Méthode Maths",
+      "url": "https://www.youtube.com/watch?v=jDH88je2Vf8"
+    },
+    {
+      "title": "Exercice corrigé — polynôme caractéristique et valeurs propres",
+      "channel": "Maths Express",
+      "url": "https://www.youtube.com/watch?v=300lX-fnIEg"
+    }
+  ]
+}

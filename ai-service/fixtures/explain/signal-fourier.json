@@ -1,0 +1,32 @@
+{
+  "concept_slug": "signal-fourier",
+  "course_id": "ENSAK-CP2-S4-03",
+  "display_name": "Transformée de Fourier discrète",
+  "levels": {
+    "beginner": {
+      "explanation": "La TFD décompose un signal en fréquences pures. Utile pour analyser, débruiter, compresser.",
+      "key_points": [
+        "Temps → fréquences",
+        "X[k] = Σ x[n]·e^(−2iπkn/N)",
+        "TFD inversible"
+      ]
+    },
+    "visual": {
+      "explanation": "Plusieurs notes au piano simultanément : la TFD distingue chaque fréquence. Spectre = barres aux fréquences présentes, hauteur = amplitude.",
+      "key_points": [
+        "Spectre = ingrédients fréquentiels",
+        "Pic = fréquence dominante",
+        "Bruit = énergie partout"
+      ]
+    },
+    "advanced": {
+      "explanation": "FFT (Cooley-Tukey) : O(N log N) au lieu de O(N²). Parseval : énergie temporelle = énergie spectrale. Shannon-Nyquist : fₛ ≥ 2·f_max.",
+      "key_points": [
+        "FFT O(N log N)",
+        "Parseval",
+        "Shannon-Nyquist"
+      ]
+    }
+  },
+  "videos_slug": "signal-fourier"
+}

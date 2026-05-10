@@ -1,0 +1,32 @@
+{
+  "concept_slug": "electrostatique-gauss",
+  "course_id": "ENSAK-CP1-S1-04",
+  "display_name": "Théorème de Gauss",
+  "levels": {
+    "beginner": {
+      "explanation": "Le flux du champ E à travers une surface fermée vaut Q_int / ε₀. Pas besoin de calculer E partout : juste la charge à l'intérieur.",
+      "key_points": [
+        "∮ E·dS = Q_int / ε₀",
+        "Surface de Gauss arbitraire",
+        "Idéal avec symétries"
+      ]
+    },
+    "visual": {
+      "explanation": "Lignes de champ comme piquants d'oursin. Le ‘nombre’ traversant une bulle ne dépend que de la charge intérieure, pas de la forme de la bulle.",
+      "key_points": [
+        "Lignes de champ = piquants",
+        "Bulle = surface de Gauss",
+        "Forme indifférente"
+      ]
+    },
+    "advanced": {
+      "explanation": "∮_∂V E·dS = (1/ε₀) ∫_V ρ dV. Forme locale : ∇·E = ρ/ε₀. Choix de surface adaptée aux symétries du problème.",
+      "key_points": [
+        "∇·E = ρ/ε₀",
+        "Symétries → choix de surface",
+        "Discontinuité E_n = σ/ε₀"
+      ]
+    }
+  },
+  "videos_slug": "electrostatique-gauss"
+}

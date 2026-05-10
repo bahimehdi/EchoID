@@ -1,0 +1,31 @@
+{
+  "concept_slug": "_fallback",
+  "display_name": "Concept hors catalogue",
+  "levels": {
+    "beginner": {
+      "explanation": "Voici une explication générale du concept demandé. Pour une réponse adaptée à ton niveau, sélectionne un concept dans le catalogue ENSAK ou contacte ton enseignant.",
+      "key_points": [
+        "Concept reformulé",
+        "Exemple typique",
+        "Erreur fréquente à éviter"
+      ]
+    },
+    "visual": {
+      "explanation": "Concept hors catalogue de démo. Une version visuelle adaptée à ton niveau sera générée par le LLM en production.",
+      "key_points": [
+        "Schéma type à venir",
+        "Analogie visuelle",
+        "Représentation concrète"
+      ]
+    },
+    "advanced": {
+      "explanation": "Concept hors catalogue de démo. La version avancée s'appuierait sur la formulation rigoureuse du sujet.",
+      "key_points": [
+        "Définition formelle",
+        "Théorème ou identité clé",
+        "Cas limite"
+      ]
+    }
+  },
+  "videos_slug": null
+}

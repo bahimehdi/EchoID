@@ -19,7 +19,7 @@ class EventControllerTest {
     private MockMvc mockMvc;
 
     @Test
-    void ingestEvent_returns501WithEnvelope() throws Exception {
+    void ingestEvent_validType_returns201() throws Exception {
         mockMvc.perform(post("/api/events")
                         .contentType("application/json")
                         .content("""
@@ -27,8 +27,18 @@ class EventControllerTest {
                                  "courseId":"550e8400-e29b-41d4-a716-446655440001","conceptText":"Big-O",
                                  "explanationLevel":"BEGINNER","timestamp":"2026-05-08T12:00:00Z"}
                                 """))
-                .andExpect(status().isNotImplemented())
-                .andExpect(jsonPath("$.success").value(false))
-                .andExpect(jsonPath("$.message").value("Not implemented — see KAN-15"));
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.success").value(true));
+    }
+
+    @Test
+    void ingestEvent_unknownType_returns400() throws Exception {
+        mockMvc.perform(post("/api/events")
+                        .contentType("application/json")
+                        .content("""
+                                {"eventType":"banana","timestamp":"2026-05-08T12:00:00Z"}
+                                """))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.success").value(false));
     }
 }

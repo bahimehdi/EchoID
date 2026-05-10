@@ -1,44 +1,94 @@
 {
   "__inputs": [],
-  "__elements": {},
   "__requires": [],
-  "annotations": {
-    "list": []
-  },
+  "annotations": { "list": [] },
   "editable": true,
-  "fiscalYearStartMonth": 0,
   "graphTooltip": 0,
-  "links": [],
+  "title": "Professor — Cohort Insights",
+  "uid": "professor",
+  "tags": ["echoid", "professor"],
+  "schemaVersion": 39,
+  "time": { "from": "now-30d", "to": "now" },
+  "timepicker": {},
+  "timezone": "browser",
+  "refresh": "30s",
+  "templating": {
+    "list": [
+      {
+        "name": "school",
+        "type": "custom",
+        "current": { "text": "All", "value": "All" },
+        "options": [
+          { "text": "All", "value": "All", "selected": true },
+          { "text": "ENSA", "value": "ENSA" },
+          { "text": "EST", "value": "EST" },
+          { "text": "FAC", "value": "FAC" }
+        ],
+        "query": "All,ENSA,EST,FAC",
+        "label": "School"
+      }
+    ]
+  },
   "panels": [
     {
-      "type": "text",
-      "title": "Coming Soon",
-      "gridPos": {
-        "x": 0,
-        "y": 0,
-        "w": 24,
-        "h": 10
-      },
       "id": 1,
+      "type": "barchart",
+      "title": "Top concepts queried (30 d)",
+      "datasource": { "type": "postgres", "uid": "EchoID-PG" },
+      "gridPos": { "x": 0, "y": 0, "w": 12, "h": 9 },
+      "targets": [
+        {
+          "rawSql": "SELECT concept, SUM(query_count) AS queries FROM v_concept_query_volume WHERE ($school = 'All' OR school::text = '$school') GROUP BY concept ORDER BY queries DESC LIMIT 10;",
+          "format": "table",
+          "refId": "A"
+        }
+      ],
       "options": {
-        "content": "# Professor Dashboard\n\nPanels coming in KAN-38.",
-        "mode": "markdown"
+        "orientation": "horizontal",
+        "legend": { "displayMode": "list", "placement": "bottom" }
       }
+    },
+    {
+      "id": 2,
+      "type": "piechart",
+      "title": "Explanation level distribution",
+      "datasource": { "type": "postgres", "uid": "EchoID-PG" },
+      "gridPos": { "x": 12, "y": 0, "w": 12, "h": 9 },
+      "targets": [
+        {
+          "rawSql": "SELECT level::text AS level, SUM(request_count) AS requests FROM v_explanation_level_distribution WHERE ($school = 'All' OR school::text = '$school') GROUP BY level;",
+          "format": "table",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "type": "timeseries",
+      "title": "Concept queries — daily volume",
+      "datasource": { "type": "postgres", "uid": "EchoID-PG" },
+      "gridPos": { "x": 0, "y": 9, "w": 24, "h": 9 },
+      "targets": [
+        {
+          "rawSql": "SELECT day AS time, SUM(query_count) AS queries FROM v_concept_query_volume WHERE ($school = 'All' OR school::text = '$school') GROUP BY day ORDER BY day;",
+          "format": "time_series",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "id": 4,
+      "type": "table",
+      "title": "OCR uploads per professor (week)",
+      "datasource": { "type": "postgres", "uid": "EchoID-PG" },
+      "gridPos": { "x": 0, "y": 18, "w": 24, "h": 8 },
+      "targets": [
+        {
+          "rawSql": "SELECT professor_name, file_type, SUM(upload_count) AS uploads FROM v_ocr_usage_per_professor GROUP BY professor_name, file_type ORDER BY uploads DESC LIMIT 20;",
+          "format": "table",
+          "refId": "A"
+        }
+      ]
     }
-  ],
-  "refresh": false,
-  "schemaVersion": 39,
-  "tags": [],
-  "templating": {
-    "list": []
-  },
-  "time": {
-    "from": "now-6h",
-    "to": "now"
-  },
-  "timepicker": {},
-  "timezone": "",
-  "title": "Professor Dashboard",
-  "uid": "prof-dashboard",
-  "version": 1
+  ]
 }

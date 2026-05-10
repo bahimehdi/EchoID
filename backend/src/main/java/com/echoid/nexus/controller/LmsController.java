@@ -21,6 +21,12 @@ import java.util.UUID;
 @Tag(name = "LMS", description = "Mocked Moodle and Google Classroom endpoints — identical response shapes regardless of LMS source")
 public class LmsController {
 
+    private final com.echoid.nexus.service.LmsService lmsService;
+
+    public LmsController(com.echoid.nexus.service.LmsService lmsService) {
+        this.lmsService = lmsService;
+    }
+
     // ── Moodle ─────────────────────────────────────────
 
     @GetMapping("/moodle/courses")
@@ -31,8 +37,7 @@ public class LmsController {
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "401", description = "Not authenticated")
     })
     public ResponseEntity<ApiResponse<List<CourseDto>>> listMoodleCourses() {
-        return ResponseEntity.status(HttpStatus.NOT_IMPLEMENTED)
-                .body(ApiResponse.error("Not implemented — see KAN-12"));
+        return ResponseEntity.ok(ApiResponse.ok(lmsService.getMoodleCourses()));
     }
 
     @GetMapping("/moodle/courses/{id}")
@@ -43,8 +48,10 @@ public class LmsController {
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "Course not found")
     })
     public ResponseEntity<ApiResponse<CourseDetailDto>> getMoodleCourse(@PathVariable UUID id) {
-        return ResponseEntity.status(HttpStatus.NOT_IMPLEMENTED)
-                .body(ApiResponse.error("Not implemented — see KAN-12"));
+        return lmsService.getMoodleCourse(id)
+                .map(course -> ResponseEntity.ok(ApiResponse.ok(course)))
+                .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND)
+                        .body(ApiResponse.error("Moodle course not found")));
     }
 
     // ── Google Classroom ───────────────────────────────
@@ -57,8 +64,7 @@ public class LmsController {
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "401", description = "Not authenticated")
     })
     public ResponseEntity<ApiResponse<List<CourseDto>>> listGClassroomCourses() {
-        return ResponseEntity.status(HttpStatus.NOT_IMPLEMENTED)
-                .body(ApiResponse.error("Not implemented — see KAN-13"));
+        return ResponseEntity.ok(ApiResponse.ok(lmsService.getGClassroomCourses()));
     }
 
     @GetMapping("/gclassroom/courses/{id}")
@@ -68,7 +74,9 @@ public class LmsController {
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "Course not found")
     })
     public ResponseEntity<ApiResponse<CourseDetailDto>> getGClassroomCourse(@PathVariable UUID id) {
-        return ResponseEntity.status(HttpStatus.NOT_IMPLEMENTED)
-                .body(ApiResponse.error("Not implemented — see KAN-13"));
+        return lmsService.getGClassroomCourse(id)
+                .map(course -> ResponseEntity.ok(ApiResponse.ok(course)))
+                .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND)
+                        .body(ApiResponse.error("Google Classroom course not found")));
     }
 }

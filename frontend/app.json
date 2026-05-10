@@ -1,0 +1,45 @@
+{
+  "expo": {
+    "name": "EchoID Nexus",
+    "slug": "echoid-nexus",
+    "version": "0.1.0",
+    "orientation": "portrait",
+    "scheme": "echoid",
+    "userInterfaceStyle": "automatic",
+    "newArchEnabled": false,
+    "splash": {
+      "resizeMode": "contain",
+      "backgroundColor": "#0F172A"
+    },
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "ma.uit.ensak.echoid"
+    },
+    "android": {
+      "package": "ma.uit.ensak.echoid",
+      "adaptiveIcon": {
+        "backgroundColor": "#0F172A"
+      }
+    },
+    "web": {
+      "bundler": "metro",
+      "output": "single"
+    },
+    "plugins": [
+      "expo-router",
+      "expo-secure-store",
+      [
+        "expo-notifications",
+        {
+          "color": "#6366F1"
+        }
+      ]
+    ],
+    "experiments": {
+      "typedRoutes": true
+    },
+    "extra": {
+      "apiBaseUrl": "http://localhost:8080"
+    }
+  }
+}

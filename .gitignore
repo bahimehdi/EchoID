@@ -1,3 +1,35 @@
+# Project knowledge base — local only
 Context/
 .context/
+
+# Secrets — never commit
 infra/env/.env
+ai-service/.env
+**/.env.local
+**/secrets.json
+
+# IDE / agent / OS noise
+.claude/
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# Build artefacts
+**/node_modules/
+**/dist/
+**/build/
+**/target/
+**/__pycache__/
+*.pyc
+
+# JVM crash dumps + log spew
+hs_err_pid*.log
+replay_pid*.log
+*.log
+test_output_log.txt
+
+# Expo / Metro caches
+.expo/
+.expo-shared/
+web-build/

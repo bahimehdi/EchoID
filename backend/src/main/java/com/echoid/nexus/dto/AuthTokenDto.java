@@ -25,4 +25,7 @@ public class AuthTokenDto {
     @Builder.Default
     @Schema(description = "Token type — always Bearer", example = "Bearer")
     private String tokenType = "Bearer";
+
+    @Schema(description = "Authenticated user profile")
+    private UserProfileDto user;
 }

@@ -1,50 +1,56 @@
-from fastapi import APIRouter, UploadFile, File, HTTPException
+from __future__ import annotations
+from fastapi import APIRouter, UploadFile, File, Form, HTTPException
 from pydantic import BaseModel
+from typing import Optional
+import time
+
+import fixture_loader
 
 router = APIRouter()
 
 
-# ── Response shape ────────────────────────────────────────────
-class OCRResponse(BaseModel):
-    filename: str
-    page_count: int
-    extracted_text: str
-    word_count: int
+class OcrResponse(BaseModel):
+    fixtureSlug: str
+    courseId: Optional[str] = None
+    ocrStatus: str
+    pageCount: int
+    extractedText: str
+    indexedConcepts: list[str]
+    confidence: float
+    processingMs: int
 
 
-# ── Endpoint ──────────────────────────────────────────────────
-@router.post("/process-notes", response_model=OCRResponse)
-async def process_notes(file: UploadFile = File(...)):
+@router.post("/process-notes", response_model=OcrResponse)
+async def process_notes(
+    file: UploadFile = File(...),
+    fixture_slug: Optional[str] = Form(None),
+) -> OcrResponse:
     """
-    Receives a PDF or image of handwritten notes.
-    Returns the extracted and cleaned text.
+    Demo posture: bytes are validated then ignored. Response is selected
+    by the optional `fixture_slug` form field; otherwise rotates through
+    the four canned OCR fixtures so repeated uploads feel realistic.
 
-    SPRINT 1: Returns mock data.
-    SPRINT 2: Replace with Tesseract OCR pipeline
-              (PDF -> image -> text -> clean -> store).
-
-    Note: The extracted text will also feed into /explain/concept
-    so students can request explanations of their own notes.
+    Production swap-in: pass bytes through Tesseract, post-process,
+    cache the result by content hash.
     """
-
-    # Validate file type before doing anything
     allowed = (".pdf", ".png", ".jpg", ".jpeg")
-    if not file.filename.lower().endswith(allowed):
+    if not file.filename or not file.filename.lower().endswith(allowed):
         raise HTTPException(
             status_code=400,
             detail=f"Unsupported file type. Allowed: {', '.join(allowed)}",
         )
 
-    # MOCK RESPONSE — replace entirely in Sprint 2
-    mock_text = (
-        "[MOCK] This is the extracted text from the uploaded handwritten notes. "
-        "In Sprint 2, Tesseract OCR will read the actual content of the file "
-        "and return the real extracted text here."
-    )
+    # Simulate a small processing delay so the UI shows a meaningful spinner.
+    time.sleep(0.8)
 
-    return OCRResponse(
-        filename=file.filename,
-        page_count=1,
-        extracted_text=mock_text,
-        word_count=len(mock_text.split()),
+    fx = fixture_loader.ocr_lookup(fixture_slug)
+    return OcrResponse(
+        fixtureSlug=fx["fixture_slug"],
+        courseId=fx.get("course_id"),
+        ocrStatus=fx.get("ocr_status", "OK"),
+        pageCount=fx.get("page_count", 1),
+        extractedText=fx.get("extracted_text", ""),
+        indexedConcepts=fx.get("indexed_concepts", []),
+        confidence=fx.get("confidence", 0.9),
+        processingMs=fx.get("processing_ms", 1000),
     )

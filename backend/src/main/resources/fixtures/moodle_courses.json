@@ -1,0 +1,477 @@
+[
+  {
+    "id": "d67f22ec-7094-372c-b123-26cfaeb1adfc",
+    "title": "Algèbre de base",
+    "lmsSource": "MOODLE",
+    "school": "ENSA",
+    "semester": "S1",
+    "isActive": true,
+    "sections": [
+      {
+        "id": "d61ff696-c959-3099-9835-08294ec3ad3c",
+        "title": "Cours",
+        "orderIndex": 1
+      },
+      {
+        "id": "a510d66f-a5d0-3f85-af89-e1ed6d43b93c",
+        "title": "Travaux dirigés",
+        "orderIndex": 2
+      },
+      {
+        "id": "39c6bc6b-c08a-31e8-a0e2-5c17cc2142fc",
+        "title": "Contrôles et examens",
+        "orderIndex": 3
+      }
+    ]
+  },
+  {
+    "id": "d6e71b76-0797-35d5-94f7-db9fcf988c1b",
+    "title": "Analyse de base 1",
+    "lmsSource": "MOODLE",
+    "school": "ENSA",
+    "semester": "S1",
+    "isActive": true,
+    "sections": [
+      {
+        "id": "e1815631-1a53-3928-a95c-eb390578f43e",
+        "title": "Cours",
+        "orderIndex": 1
+      },
+      {
+        "id": "93c5ce79-6533-3275-bb53-ccc19d784d1b",
+        "title": "Travaux dirigés",
+        "orderIndex": 2
+      },
+      {
+        "id": "c5aa953a-4bb1-3d2d-a215-173508d4167a",
+        "title": "Contrôles et examens",
+        "orderIndex": 3
+      }
+    ]
+  },
+  {
+    "id": "458bc919-469e-3b09-882f-6fb5c60011e8",
+    "title": "Analyse de base 2",
+    "lmsSource": "MOODLE",
+    "school": "ENSA",
+    "semester": "S1",
+    "isActive": true,
+    "sections": [
+      {
+        "id": "d6f7bcd1-a52f-343d-877b-bc3c53f85dbb",
+        "title": "Cours",
+        "orderIndex": 1
+      },
+      {
+        "id": "292f7cbc-88fb-37ab-a7a1-4d24071d8d79",
+        "title": "Travaux dirigés",
+        "orderIndex": 2
+      },
+      {
+        "id": "c84a44d8-08ca-3772-903f-0073a5cc325f",
+        "title": "Contrôles et examens",
+        "orderIndex": 3
+      }
+    ]
+  },
+  {
+    "id": "3ac63aea-a8b9-31d4-9ced-d550a3c1cf56",
+    "title": "Électrostatique et électrocinétique des courants continus",
+    "lmsSource": "MOODLE",
+    "school": "ENSA",
+    "semester": "S1",
+    "isActive": true,
+    "sections": [
+      {
+        "id": "4fdc08fa-d034-3af2-be8c-e80121079b23",
+        "title": "Cours",
+        "orderIndex": 1
+      },
+      {
+        "id": "75c15905-889c-37fc-b464-cdb1ea7178ae",
+        "title": "Travaux dirigés",
+        "orderIndex": 2
+      },
+      {
+        "id": "c311095c-a3a2-3a6e-8f32-42d6ce844994",
+        "title": "Contrôles et examens",
+        "orderIndex": 3
+      }
+    ]
+  },
+  {
+    "id": "6ee148ac-c319-337f-b2b8-fbe321c4cb04",
+    "title": "Mécanique du point matériel",
+    "lmsSource": "MOODLE",
+    "school": "ENSA",
+    "semester": "S1",
+    "isActive": true,
+    "sections": [
+      {
+        "id": "de8ae26b-92a5-39a0-8d8b-651694258dd7",
+        "title": "Cours",
+        "orderIndex": 1
+      },
+      {
+        "id": "f95182c0-ef42-302b-8866-81d7b7188e57",
+        "title": "Travaux dirigés",
+        "orderIndex": 2
+      },
+      {
+        "id": "167cc95a-f484-373e-be7b-9a5112867fbb",
+        "title": "Contrôles et examens",
+        "orderIndex": 3
+      }
+    ]
+  },
+  {
+    "id": "bdedf822-a92d-3eb6-a6b3-8b3b7e8e79de",
+    "title": "Algèbre linéaire et calcul matriciel",
+    "lmsSource": "MOODLE",
+    "school": "ENSA",
+    "semester": "S2",
+    "isActive": true,
+    "sections": [
+      {
+        "id": "eb8089f9-8003-3819-9fc1-c18beb9bc7d5",
+        "title": "Cours",
+        "orderIndex": 1
+      },
+      {
+        "id": "c6612365-1fc1-357b-b15a-8d4989fcdde9",
+        "title": "Travaux dirigés",
+        "orderIndex": 2
+      },
+      {
+        "id": "9e979ea8-345d-3240-ac05-6d804cc22a46",
+        "title": "Contrôles et examens",
+        "orderIndex": 3
+      }
+    ]
+  },
+  {
+    "id": "05957b61-18c2-378b-b386-5d60f003b59e",
+    "title": "Analyse fondamentale",
+    "lmsSource": "MOODLE",
+    "school": "ENSA",
+    "semester": "S2",
+    "isActive": true,
+    "sections": [
+      {
+        "id": "fffe9e6f-a7ed-3123-b7e8-5ebcc8e2a225",
+        "title": "Cours",
+        "orderIndex": 1
+      },
+      {
+        "id": "84083ec9-9c8c-3614-9d74-96dd0154c9f7",
+        "title": "Travaux dirigés",
+        "orderIndex": 2
+      },
+      {
+        "id": "3bd8d8e4-0393-315b-87a5-7b2a1742bec1",
+        "title": "Contrôles et examens",
+        "orderIndex": 3
+      }
+    ]
+  },
+  {
+    "id": "2d984bcd-3c6c-3926-947e-e2bf11da4bba",
+    "title": "Électromagnétisme et électrocinétique des courants alternatifs",
+    "lmsSource": "MOODLE",
+    "school": "ENSA",
+    "semester": "S2",
+    "isActive": true,
+    "sections": [
+      {
+        "id": "a4a04c62-e427-38de-9237-c2b5ca61dd53",
+        "title": "Cours",
+        "orderIndex": 1
+      },
+      {
+        "id": "2384b282-2a0b-3f57-af9a-bee296be0c6f",
+        "title": "Travaux dirigés",
+        "orderIndex": 2
+      },
+      {
+        "id": "93939a3c-95d7-3463-8ab0-00c9861c149e",
+        "title": "Contrôles et examens",
+        "orderIndex": 3
+      }
+    ]
+  },
+  {
+    "id": "ba23241a-a632-3580-ad5a-3f8b63565b9b",
+    "title": "Optique géométrique et instrumentale",
+    "lmsSource": "MOODLE",
+    "school": "ENSA",
+    "semester": "S2",
+    "isActive": true,
+    "sections": [
+      {
+        "id": "ccf92fcc-dc92-374b-bd69-176985b46cef",
+        "title": "Cours",
+        "orderIndex": 1
+      },
+      {
+        "id": "dcfa711b-f38a-32e2-8818-0e768339dfb3",
+        "title": "Travaux dirigés",
+        "orderIndex": 2
+      },
+      {
+        "id": "efef0c9b-3650-36d7-b8db-b2589c5da5d8",
+        "title": "Contrôles et examens",
+        "orderIndex": 3
+      }
+    ]
+  },
+  {
+    "id": "a30f6a75-cd87-3e15-af58-7e305a8560ee",
+    "title": "Thermodynamique générale",
+    "lmsSource": "MOODLE",
+    "school": "ENSA",
+    "semester": "S2",
+    "isActive": true,
+    "sections": [
+      {
+        "id": "81a8a307-55de-3aae-8e95-5264ffb164c3",
+        "title": "Cours",
+        "orderIndex": 1
+      },
+      {
+        "id": "72ce8a10-5e67-3912-9431-b3dfe81799ab",
+        "title": "Travaux dirigés",
+        "orderIndex": 2
+      },
+      {
+        "id": "a61495c7-0a7a-3df1-941d-8bf132d184a7",
+        "title": "Contrôles et examens",
+        "orderIndex": 3
+      }
+    ]
+  },
+  {
+    "id": "345bfb0f-4867-3256-9537-dd9b4ae0819f",
+    "title": "Algèbre bilinéaire et sesquilinéaire",
+    "lmsSource": "MOODLE",
+    "school": "ENSA",
+    "semester": "S1",
+    "isActive": true,
+    "sections": [
+      {
+        "id": "8b99cc7c-d109-3890-b565-4630d2f009f9",
+        "title": "Cours",
+        "orderIndex": 1
+      },
+      {
+        "id": "18f38d0b-a17f-30a3-9616-a4c8631dbc25",
+        "title": "Travaux dirigés",
+        "orderIndex": 2
+      },
+      {
+        "id": "38a86b90-55d4-335a-81aa-2af41f2a8b0c",
+        "title": "Contrôles et examens",
+        "orderIndex": 3
+      }
+    ]
+  },
+  {
+    "id": "b6194422-32ed-3bfc-ad24-024a152de4df",
+    "title": "Fonctions de plusieurs variables réelles",
+    "lmsSource": "MOODLE",
+    "school": "ENSA",
+    "semester": "S1",
+    "isActive": true,
+    "sections": [
+      {
+        "id": "502b9671-4335-3c89-bfc5-30a37784653e",
+        "title": "Cours",
+        "orderIndex": 1
+      },
+      {
+        "id": "78c9f2df-7fcf-33c2-877b-db6aa821006d",
+        "title": "Travaux dirigés",
+        "orderIndex": 2
+      },
+      {
+        "id": "49c16672-fc0c-30ad-93e7-96159167dbf4",
+        "title": "Contrôles et examens",
+        "orderIndex": 3
+      }
+    ]
+  },
+  {
+    "id": "de6d4781-4088-3d50-82ca-6612285f3df9",
+    "title": "Mécanique du solide et systèmes",
+    "lmsSource": "MOODLE",
+    "school": "ENSA",
+    "semester": "S1",
+    "isActive": true,
+    "sections": [
+      {
+        "id": "8952c87c-19a4-3b47-92aa-7cf2d3bb87ae",
+        "title": "Cours",
+        "orderIndex": 1
+      },
+      {
+        "id": "3c3a531d-2f18-3cc6-b65a-104c6c1bdf40",
+        "title": "Travaux dirigés",
+        "orderIndex": 2
+      },
+      {
+        "id": "bd3f382b-3af0-3c65-a24a-7b0a55731801",
+        "title": "Contrôles et examens",
+        "orderIndex": 3
+      }
+    ]
+  },
+  {
+    "id": "41ed7bd4-6aa2-3506-a432-759739945f10",
+    "title": "Propriétés de base des matériaux",
+    "lmsSource": "MOODLE",
+    "school": "ENSA",
+    "semester": "S1",
+    "isActive": true,
+    "sections": [
+      {
+        "id": "2e7efc19-a6da-33fc-8989-aacb1b1878db",
+        "title": "Cours",
+        "orderIndex": 1
+      },
+      {
+        "id": "4980c1e3-44a9-325c-8d08-6f0bc3503837",
+        "title": "Travaux dirigés",
+        "orderIndex": 2
+      },
+      {
+        "id": "88660e28-4928-372b-a670-98a453bb65b7",
+        "title": "Contrôles et examens",
+        "orderIndex": 3
+      }
+    ]
+  },
+  {
+    "id": "df560570-c4e6-38d2-b2ee-70cae8b97e05",
+    "title": "Chimie",
+    "lmsSource": "MOODLE",
+    "school": "ENSA",
+    "semester": "S1",
+    "isActive": true,
+    "sections": [
+      {
+        "id": "95dad109-0536-3779-bc74-1e2756d36b4c",
+        "title": "Cours",
+        "orderIndex": 1
+      },
+      {
+        "id": "cbfc30c7-7593-3e60-8390-f4ef2eea8da4",
+        "title": "Travaux dirigés",
+        "orderIndex": 2
+      },
+      {
+        "id": "b8d043ba-32a2-3fb8-b4ee-8d2fd7246f88",
+        "title": "Contrôles et examens",
+        "orderIndex": 3
+      }
+    ]
+  },
+  {
+    "id": "29bc5f0e-aedd-3c7b-be9a-2c5282078dc3",
+    "title": "Analyse numérique",
+    "lmsSource": "MOODLE",
+    "school": "ENSA",
+    "semester": "S2",
+    "isActive": true,
+    "sections": [
+      {
+        "id": "f1abafda-a901-34f7-9fda-f0f0008b85f1",
+        "title": "Cours",
+        "orderIndex": 1
+      },
+      {
+        "id": "139c2bc9-f4e8-3a08-a7a7-d401543be135",
+        "title": "Travaux dirigés",
+        "orderIndex": 2
+      },
+      {
+        "id": "29d5f83a-f7dd-38fa-acc1-70cfd0283f03",
+        "title": "Contrôles et examens",
+        "orderIndex": 3
+      }
+    ]
+  },
+  {
+    "id": "c2573c08-5ff2-3a96-8e5d-8395b708e5bd",
+    "title": "Probabilités et statistiques",
+    "lmsSource": "MOODLE",
+    "school": "ENSA",
+    "semester": "S2",
+    "isActive": true,
+    "sections": [
+      {
+        "id": "596be2a7-614e-33a5-b0f0-66ca112cb348",
+        "title": "Cours",
+        "orderIndex": 1
+      },
+      {
+        "id": "d576461f-8207-3e98-b274-31819f0d07ad",
+        "title": "Travaux dirigés",
+        "orderIndex": 2
+      },
+      {
+        "id": "d1be0093-e458-3b99-872e-c15d65dd2bda",
+        "title": "Contrôles et examens",
+        "orderIndex": 3
+      }
+    ]
+  },
+  {
+    "id": "f8823937-6b49-3acc-aa1f-8a2d81b87407",
+    "title": "Traitement du signal",
+    "lmsSource": "MOODLE",
+    "school": "ENSA",
+    "semester": "S2",
+    "isActive": true,
+    "sections": [
+      {
+        "id": "1d7c1c83-9118-3681-9208-fb9d0410cf19",
+        "title": "Cours",
+        "orderIndex": 1
+      },
+      {
+        "id": "62c8721b-179b-3bf9-9a67-7872a8244e2b",
+        "title": "Travaux dirigés",
+        "orderIndex": 2
+      },
+      {
+        "id": "1f2aa0c5-9f4e-381c-9ce1-11701392b0a3",
+        "title": "Contrôles et examens",
+        "orderIndex": 3
+      }
+    ]
+  },
+  {
+    "id": "60aab4f7-3379-3890-a891-ab4acac7818b",
+    "title": "Optique physique et lasers",
+    "lmsSource": "MOODLE",
+    "school": "ENSA",
+    "semester": "S2",
+    "isActive": true,
+    "sections": [
+      {
+        "id": "6b4289ed-8fbc-314e-af78-e6b15f11181d",
+        "title": "Cours",
+        "orderIndex": 1
+      },
+      {
+        "id": "167061ea-c3c8-31d6-a984-5715b41a1464",
+        "title": "Travaux dirigés",
+        "orderIndex": 2
+      },
+      {
+        "id": "0037cff3-8603-3789-8f42-7c262595098a",
+        "title": "Contrôles et examens",
+        "orderIndex": 3
+      }
+    ]
+  }
+]

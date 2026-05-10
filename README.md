@@ -1,17 +1,20 @@
 # EchoID Nexus
 
-EchoID Nexus is an MVP project developed for UIT University. Our goal is to create a seamless, AI-integrated platform with the potential for university-wide implementation. The system is designed to provide intelligent tooling for students and real-time insights (e.g., course comprehension predictions) for professors and administrators. 
+EchoID Nexus is an AI-integrated layer **on top of** existing university LMS platforms (Moodle, Google Classroom) — augmenting them with level-adapted explanations, OCR ingestion, and predictive workload modeling instead of replacing them.
 
-By ensuring students utilize our AI tools for studying their courses, we gather high-quality, diverse data across various university branches (ENSA, EST, FAC, etc.) to continuously train and improve our models.
+**Pilot scope (competition demo):** ENSAK preparatory cycle — CP1 (S1+S2) and CP2 (S3+S4). Course catalogue is grounded in the real ENSAK syllabus. The same architecture extends to the rest of UIT (ENSA, EST, FAC) by adding rows to the same fixtures.
+
+**Demo posture:** the live demo runs offline — no AI / YouTube API keys required. The AI service is backed by a curated fixture catalogue keyed by concept slug. See [`.context/POSITIONING.md`](./.context/POSITIONING.md) and [`.context/DEMO_FALLBACKS.md`](./.context/DEMO_FALLBACKS.md) for details.
 
 ## Architecture & Services
 
 The project is structured into distinct services:
 
-- **[`backend/`](./backend)**: Spring Boot service handling the core logic and API.
-- **[`frontend/`](./frontend)**: React Native mobile component.
-- **[`ai-service/`](./ai-service)**: FastAPI service for our machine learning and AI features.
-- **`db`**: PostgreSQL container managed by docker-compose.
+- **[`backend/`](./backend)**: Spring Boot 3 / Java 21. Auth (JWT + refresh, OAuth2 Google), RBAC, course/LMS aggregation, events, workload, notifications.
+- **[`ai-service/`](./ai-service)**: FastAPI 0.111 / Python 3.11. Explainer, OCR, YouTube — fixture-backed for the demo (see `.context/DEMO_FALLBACKS.md`).
+- **[`frontend/`](./frontend)**: React Native (Expo, TypeScript) — student mobile app.
+- **`web/`**: Vite + React (TS) — professor / admin dashboards with Grafana iframes.
+- **PostgreSQL 16** + **Grafana** containers managed by docker-compose.
 
 *For detailed API contracts, see the `docs/` folder (e.g. [`ai_api_contract.md`](./docs/ai_api_contract.md)).*
 
@@ -39,7 +42,15 @@ To run this project, make sure you have:
 
 For the full environment variable reference, see [`ENV_VARS.md`](./ENV_VARS.md).
 
-<!-- TODO: Add React Native specific setup steps here once frontend starts development -->
+### Mobile app (Expo)
+
+```bash
+cd frontend
+npm install
+npx expo start
+```
+
+Then press `a` for Android emulator, `i` for iOS simulator, or scan the QR code with the Expo Go app on a physical device. The app expects the backend on `http://localhost:8080`; for a physical device, set `EXPO_PUBLIC_API_BASE_URL` to your machine's LAN IP.
 
 ## Environment Variables
 
@@ -48,6 +59,12 @@ Environment templates are located in `infra/env/`. The `.env.example` file is de
 ## Service URLs (Local Development)
 
 When running through the provided docker-compose:
-- **Backend API**: `http://localhost:8080`
+- **Backend API**: `http://localhost:8080` (Swagger UI at `/swagger-ui.html`)
 - **AI Service API**: `http://localhost:8000`
+- **Web dashboards** (professor / admin): `http://localhost:3000`
+- **Grafana**: `http://localhost:3001`
 - **Database**: `localhost:5432`
+
+## Project context
+
+For the full project knowledge base (architecture deep-dive, Jira ticket sync, fixture catalogue, skill modules), see the gitignored `.context/` folder. Start with [`.context/INDEX.md`](./.context/INDEX.md).

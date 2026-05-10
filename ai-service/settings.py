@@ -6,10 +6,12 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 
 class Settings(BaseSettings):
     port: int = 8000
-    llm_api_key: str = Field(min_length=1)
-    google_api_key: str = Field(min_length=1)
-    youtube_api_key: str = Field(min_length=1)
-    ocr_language_hint: str = "en"
+    # Demo posture: AI/YouTube responses are fixture-backed, so these keys are
+    # optional. They become required only when the production swap-in is wired.
+    llm_api_key: str = ""
+    google_api_key: str = ""
+    youtube_api_key: str = ""
+    ocr_language_hint: str = "fr"
     backend_url: str = "http://backend:8080"
 
     model_config = SettingsConfigDict(
