@@ -94,7 +94,6 @@ const styles = StyleSheet.create({
   },
   body: { padding: spacing.md },
   title: { color: colors.text, fontSize: fontSize.md, fontWeight: '700', lineHeight: 20 },
-  metaRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: 6 },
   channel: { color: colors.textMuted, fontSize: fontSize.sm },
   metaRow: { flexDirection: 'row', gap: spacing.md, marginTop: 4 },
   metaText: { color: colors.textSubtle, fontSize: fontSize.xs, fontWeight: '600' },

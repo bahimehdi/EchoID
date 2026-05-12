@@ -7,7 +7,7 @@ const NEXUS_KEY = 'nexusai';
 const ICONS: Record<string, string> = {
   home: '⌂',
   courses: '☱',
-  nexusai: '✦',
+  nexusai: '🎓',
   workload: '▤',
   profile: '◉',
 };

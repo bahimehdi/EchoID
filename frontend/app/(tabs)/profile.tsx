@@ -1,10 +1,11 @@
-import { View, Text, Pressable, StyleSheet, ScrollView } from 'react-native';
+import { View, Text, Pressable, StyleSheet, ScrollView, Image } from 'react-native';
 import { useAuth } from '../../lib/auth';
 import { colors, fontSize, radius, spacing } from '../../lib/theme';
 import Card from '../../components/Card';
 import Badge from '../../components/Badge';
-import Avatar from '../../components/Avatar';
 import Header from '../../components/Header';
+
+const profileImage = require('../../assets/pfp-user.png');
 
 export default function Profile() {
   const { user, clear } = useAuth();
@@ -16,7 +17,7 @@ export default function Profile() {
       <Header />
       <ScrollView contentContainerStyle={{ padding: spacing.xl, paddingBottom: 120 }}>
         <View style={{ alignItems: 'center', marginBottom: spacing.lg }}>
-          <Avatar name={fullName} size={92} />
+          <Image source={profileImage} style={styles.profileImage} resizeMode="cover" />
           <Text style={styles.name}>{fullName}</Text>
           <Text style={styles.role}>{filiere}</Text>
           <View style={{ marginTop: spacing.sm }}>
@@ -86,6 +87,13 @@ function NavRow({ label, sub, right, icon }: { label: string; sub?: string; righ
 
 const styles = StyleSheet.create({
   root: { flex: 1, backgroundColor: colors.bg },
+  profileImage: {
+    width: 92,
+    height: 92,
+    borderRadius: 46,
+    borderWidth: 3,
+    borderColor: colors.surface,
+  },
   name: { fontSize: 28, fontWeight: '900', color: colors.text, marginTop: spacing.md },
   role: { fontSize: fontSize.sm, color: colors.textMuted, marginTop: 2 },
 

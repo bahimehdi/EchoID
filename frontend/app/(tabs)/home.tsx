@@ -10,6 +10,9 @@ import Card from '../../components/Card';
 import Donut from '../../components/Donut';
 import ProgressBar from '../../components/ProgressBar';
 
+const DEMO_WORKLOAD_PCT = 64;
+const DEMO_CREDITS_PCT = 72;
+
 const FR_DAYS = ['Dim', 'Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam'];
 const FR_DAYS_FULL = ['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim'];
 const FR_MONTHS = ['Janvier', 'Février', 'Mars', 'Avril', 'Mai', 'Juin', 'Juillet', 'Août', 'Septembre', 'Octobre', 'Novembre', 'Décembre'];
@@ -54,7 +57,7 @@ export default function Home() {
   // Wd score (0..1+) → capacity %. Cap at 100.
   const capacityPct = workload.data
     ? Math.min(100, Math.round((workload.data.wdScore / 0.30) * 100))
-    : 0;
+    : DEMO_WORKLOAD_PCT;
 
   const greetingName = (user?.fullName ?? user?.email ?? '').split(' ')[0] || 'étudiant';
 
@@ -155,7 +158,7 @@ export default function Home() {
             <View style={{ alignItems: 'center', marginVertical: spacing.md }}>
               <Donut pct={capacityPct} caption="capacité" />
             </View>
-            <ProgressBar pct={courses.data ? Math.round((courses.data.length / 8) * 100) : 0}
+            <ProgressBar pct={courses.data ? Math.round((courses.data.length / 8) * 100) : DEMO_CREDITS_PCT}
                          label="Crédits validés" color={colors.accentOrange} />
             <Text style={styles.cardLink}>Voir l’analyse complète →</Text>
           </Card>
@@ -175,7 +178,7 @@ export default function Home() {
                 <View style={[styles.notifDot, { backgroundColor: n.color }]} />
                 <View style={{ flex: 1 }}>
                   <Text style={styles.notifBody}>{n.body}</Text>
-                  <Text style={styles.notifWhen}>{n.when}</Text>
+                  <Text style={styles.notifWhen}>{i === 1 ? 'Google Classroom' : 'Moodle'} • {n.when}</Text>
                 </View>
               </View>
             ))}

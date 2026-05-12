@@ -6,7 +6,7 @@ const GLYPHS: Record<string, string> = {
   courses: '☱',
   alerts: '◔',
   profile: '◉',
-  nexus: '✦',
+  nexus: '🎓',
   analyse: '▤',
 };
 

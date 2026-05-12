@@ -1,20 +1,13 @@
 import { useState, useRef, useEffect } from 'react';
 import {
   View, Text, TextInput, Pressable, ScrollView, ActivityIndicator,
-  StyleSheet, KeyboardAvoidingView, Platform, Alert,
+  StyleSheet, KeyboardAvoidingView, Platform,
 } from 'react-native';
 import * as DocumentPicker from 'expo-document-picker';
 import { api, unwrap } from '../../lib/api';
-import type { ExplainResponse, OcrResponse, ExplanationLevel } from '../../lib/types';
+import type { OcrResponse } from '../../lib/types';
 import { colors, fontSize, radius, spacing } from '../../lib/theme';
-import Header from '../../components/Header';
 import VideoCard, { VideoCardProps } from '../../components/VideoCard';
-
-type VideosPayload = {
-  conceptSlug: string;
-  videos: Array<VideoCardProps>;
-  isFallback: boolean;
-};
 
 type ChatMsg =
   | { role: 'user'; text: string }
@@ -22,82 +15,94 @@ type ChatMsg =
       role: 'assistant';
       text: string;
       keyPoints?: string[];
-      isFallback?: boolean;
       videos?: VideoCardProps[];
     }
   | { role: 'system'; text: string };
 
-const slugify = (s: string) =>
-  s.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().trim()
-    .replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
-
-// Display text + the exact concept_slug from the curated fixture catalogue.
-// Tapping a chip dispatches the slug directly; free-text input still goes
-// through the slugifier but won't match these (it falls back to the generic
-// answer).
-const SUGGESTIONS: Array<{ display: string; slug: string }> = [
-  { display: '1er principe de la thermodynamique', slug: 'thermo-1er-principe' },
-  { display: 'Diagonalisation d’une matrice',      slug: 'algebre-diagonalisation' },
-  { display: 'Récursivité en Python',              slug: 'algo-recursivite' },
-  { display: 'Théorème de Bayes',                  slug: 'proba-bayes' },
-  { display: 'Transformée de Fourier discrète',    slug: 'signal-fourier' },
-  { display: 'Lentilles minces',                   slug: 'optique-lentilles-minces' },
-  { display: 'Lois de Newton',                     slug: 'mecanique-newton' },
-  { display: 'Théorème de Gauss',                  slug: 'electrostatique-gauss' },
-  { display: 'Limites et continuité',              slug: 'analyse-limites' },
-  { display: 'Séries numériques',                  slug: 'analyse-series' },
-  { display: 'Équilibres chimiques',               slug: 'chimie-equilibre' },
-  { display: 'Amplificateur opérationnel',         slug: 'electronique-amplificateur-op' },
+const MODULES = [
+  'Algèbre linéaire et calcul matriciel',
+  'Thermodynamique générale',
+  'Chimie',
+  'Probabilités et statistiques',
+  'Traitement du signal',
+  'Algorithmique & Programmation (Python)',
 ];
 
+const CHAPTERS = ['Chapitre 1', 'Chapitre 2', 'Chapitre 3', 'Chapitre 4'];
+
+const DEMO_EXPLANATION = `Dans ton TD, le point décisif n’est pas seulement le fait que la matrice ait une seule valeur propre λ de multiplicité algébrique 3. Ce qui décide la diagonalisation, c’est la dimension de l’espace propre associé.
+
+Tu dois résoudre (A - λI₃)X = 0. L’ensemble des solutions est Eλ = Ker(A - λI₃). Si dim(Eλ) = 3, alors tu as trois vecteurs propres linéairement indépendants dans R³ : la matrice est diagonalisable. Tu formes alors P avec ces trois vecteurs propres en colonnes, et D = diag(λ, λ, λ), donc A = PDP⁻¹.
+
+Si dim(Eλ) vaut 1 ou 2, il manque des vecteurs propres pour former une base de R³ : la matrice n’est pas diagonalisable.
+
+Cas important pour ton oral : une matrice 3x3 qui n’a qu’une seule valeur propre peut être diagonalisable seulement si son espace propre est de dimension 3. Dans ce cas, comme D = λI₃, on obtient même A = λI₃. Donc en pratique, si A n’est pas déjà égale à λI₃, elle ne sera pas diagonalisable dans ce scénario.`;
+
+const DEMO_KEY_POINTS = [
+  'Multiplicité algébrique : λ apparaît trois fois dans le polynôme caractéristique.',
+  'Multiplicité géométrique : dim Ker(A - λI₃). C’est elle qu’il faut calculer.',
+  'Diagonalisable ⇔ multiplicité géométrique = multiplicité algébrique = 3.',
+  'Si la dimension est 3, P est formée avec trois vecteurs propres indépendants et D = λI₃.',
+];
+
+const DEMO_VIDEOS: VideoCardProps[] = [
+  {
+    title: 'Vidéo exacte — matrice 3x3 avec une seule valeur propre',
+    channel: 'YouTube',
+    url: 'https://www.youtube.com/watch?v=l1GM65A-VR4',
+    videoId: 'l1GM65A-VR4',
+    thumbnailUrl: 'https://i.ytimg.com/vi/l1GM65A-VR4/hqdefault.jpg',
+  },
+  {
+    title: 'Diagonaliser une matrice 3×3 — exercice',
+    channel: 'Maths-Et-Tiques',
+    url: 'https://www.youtube.com/watch?v=EUtdnH4jQpo',
+    videoId: 'EUtdnH4jQpo',
+    thumbnailUrl: 'https://i.ytimg.com/vi/EUtdnH4jQpo/hqdefault.jpg',
+  },
+  {
+    title: 'Polynôme caractéristique, valeurs propres et diagonalisation',
+    channel: 'Maths Express',
+    url: 'https://www.youtube.com/watch?v=300lX-fnIEg',
+    videoId: '300lX-fnIEg',
+    thumbnailUrl: 'https://i.ytimg.com/vi/300lX-fnIEg/hqdefault.jpg',
+  },
+];
+
+const wait = (ms: number) => new Promise<void>((resolve) => setTimeout(resolve, ms));
+
 export default function NexusAI() {
-  const [level, setLevel] = useState<ExplanationLevel>('beginner');
   const [input, setInput] = useState('');
   const [busy, setBusy] = useState(false);
-  const [messages, setMessages] = useState<ChatMsg[]>([
-    { role: 'assistant', text: 'Bonjour ! Je suis NexusAI, ton assistant pédagogique. Pose-moi une question, choisis un concept, ou importe un document à analyser.' },
-  ]);
+  const [selectedModule, setSelectedModule] = useState(MODULES[0]);
+  const [selectedChapter, setSelectedChapter] = useState('Chapitre 3');
+  const [moduleOpen, setModuleOpen] = useState(false);
+  const [chapterOpen, setChapterOpen] = useState(false);
+  const [messages, setMessages] = useState<ChatMsg[]>([]);
   const scroller = useRef<ScrollView | null>(null);
 
   useEffect(() => {
     setTimeout(() => scroller.current?.scrollToEnd({ animated: true }), 80);
-  }, [messages]);
+  }, [messages, busy]);
 
-  const ask = async (opts?: { display?: string; slug?: string }) => {
-    const display = (opts?.display ?? input).trim();
-    if (!display) return;
+  const ask = async () => {
+    const display = input.trim();
+    if (!display || busy) return;
+
     setInput('');
     setBusy(true);
     setMessages((prev) => [...prev, { role: 'user', text: display }]);
-    try {
-      // Curated slug if the user tapped a suggestion; otherwise slugified input.
-      const slug = opts?.slug ?? slugify(display);
-      const r = await unwrap<ExplainResponse>(
-        api.post('/api/ai/explain', { conceptSlug: slug, level }),
-      );
-      // Use the explainer's mapping back to its own video catalogue when present.
-      const vidSlug = r.videosSlug ?? slug;
-      let videos: VideoCardProps[] = [];
-      try {
-        const vp = await unwrap<VideosPayload>(api.post('/api/ai/videos', { conceptSlug: vidSlug }));
-        // Filter out fallback / placeholder videos: they have no videoId.
-        videos = (vp.videos ?? []).filter((v) => !!v.videoId);
-      } catch { /* videos optional; explanation still shown */ }
 
+    try {
+      await wait(3000);
       setMessages((prev) => [
         ...prev,
         {
           role: 'assistant',
-          text: r.explanation,
-          keyPoints: r.keyPoints,
-          isFallback: r.isFallback,
-          videos,
+          text: DEMO_EXPLANATION,
+          keyPoints: DEMO_KEY_POINTS,
+          videos: DEMO_VIDEOS,
         },
-      ]);
-    } catch (e: any) {
-      setMessages((prev) => [
-        ...prev,
-        { role: 'system', text: 'Le service AI est momentanément indisponible.' },
       ]);
     } finally {
       setBusy(false);
@@ -111,7 +116,7 @@ export default function NexusAI() {
     if (picked.canceled || !picked.assets?.[0]) return;
     const file = picked.assets[0];
     setBusy(true);
-    setMessages((prev) => [...prev, { role: 'user', text: `📎 ${file.name}` }]);
+    setMessages((prev) => [...prev, { role: 'user', text: `Document importé : ${file.name}` }]);
     const form = new FormData();
     form.append('file', { uri: file.uri, name: file.name, type: file.mimeType ?? 'application/octet-stream' } as any);
     try {
@@ -133,26 +138,76 @@ export default function NexusAI() {
 
   return (
     <View style={styles.root}>
-      <Header title="Université Ibn Tofaïl" />
-      <View style={styles.contextRow}>
-        <Pill label="Algorithmique Avancée" />
-        <Pill label="Chap. 2 — Graphes" />
-      </View>
-
       <ScrollView
         ref={scroller}
         contentContainerStyle={{ padding: spacing.lg, paddingBottom: 24 }}
         style={{ flex: 1 }}
       >
+        <View style={styles.selectorPanel}>
+          <Text style={styles.selectorLabel}>Module</Text>
+          <Pressable style={styles.selectBtn} onPress={() => setModuleOpen((v) => !v)}>
+            <Text style={styles.selectText}>{selectedModule}</Text>
+            <Text style={styles.selectChevron}>{moduleOpen ? '⌃' : '⌄'}</Text>
+          </Pressable>
+          {moduleOpen && (
+            <View style={styles.selectMenu}>
+              {MODULES.map((module) => (
+                <Pressable
+                  key={module}
+                  style={[styles.selectOption, selectedModule === module && styles.selectOptionActive]}
+                  onPress={() => {
+                    setSelectedModule(module);
+                    setModuleOpen(false);
+                  }}
+                >
+                  <Text style={[styles.selectOptionText, selectedModule === module && styles.selectOptionTextActive]}>
+                    {module}
+                  </Text>
+                </Pressable>
+              ))}
+            </View>
+          )}
+          {selectedModule === MODULES[0] && (
+            <View style={styles.chapterArea}>
+              <Text style={[styles.selectorLabel, styles.chapterSelectorLabel]}>Chapitre</Text>
+              <Pressable style={styles.selectBtn} onPress={() => setChapterOpen((v) => !v)}>
+                <Text style={styles.selectText}>{selectedChapter}</Text>
+                <Text style={styles.selectChevron}>{chapterOpen ? '⌃' : '⌄'}</Text>
+              </Pressable>
+              {chapterOpen && (
+                <View style={styles.selectMenu}>
+                  {CHAPTERS.map((chapter) => (
+                    <Pressable
+                      key={chapter}
+                      style={[styles.selectOption, selectedChapter === chapter && styles.selectOptionActive]}
+                      onPress={() => {
+                        setSelectedChapter(chapter);
+                        setChapterOpen(false);
+                      }}
+                    >
+                      <Text style={[styles.selectOptionText, selectedChapter === chapter && styles.selectOptionTextActive]}>
+                        {chapter}
+                      </Text>
+                    </Pressable>
+                  ))}
+                </View>
+              )}
+              {selectedChapter === 'Chapitre 3' && (
+                <View style={styles.chapterBox}>
+                  <Text style={styles.chapterLabel}>Concept du TD</Text>
+                  <Text style={styles.chapterTitle}>Diagonalisation d’une matrice</Text>
+                </View>
+              )}
+            </View>
+          )}
+        </View>
+
         {messages.map((m, i) => (
           <View key={i} style={[styles.msgRow, m.role === 'user' ? styles.msgRowUser : null]}>
             {m.role === 'system' ? (
               <Text style={styles.systemMsg}>{m.text}</Text>
             ) : (
               <View style={[styles.bubble, m.role === 'user' ? styles.bubbleUser : styles.bubbleAi]}>
-                {m.role === 'assistant' && m.isFallback && (
-                  <Text style={styles.fallbackTag}>Réponse générique</Text>
-                )}
                 <Text style={[styles.bubbleText, m.role === 'user' && styles.bubbleTextUser]}>{m.text}</Text>
                 {m.role === 'assistant' && m.keyPoints && m.keyPoints.length > 0 && (
                   <View style={{ marginTop: spacing.sm }}>
@@ -165,9 +220,7 @@ export default function NexusAI() {
             )}
             {m.role === 'assistant' && m.videos && m.videos.length > 0 && (
               <View style={styles.videoSection}>
-                <Text style={styles.videoSectionTitle}>
-                  Vidéos pédagogiques sur ce concept
-                </Text>
+                <Text style={styles.videoSectionTitle}>Vidéo recommandée pour ce TD</Text>
                 {m.videos.map((v, j) => (
                   <VideoCard key={`${v.url}-${j}`} {...v} />
                 ))}
@@ -176,39 +229,17 @@ export default function NexusAI() {
           </View>
         ))}
 
-        {busy && <ActivityIndicator color={colors.primary} style={{ marginTop: spacing.md }} />}
-
-        {messages.length <= 1 && (
-          <View style={{ marginTop: spacing.md }}>
-            <Text style={styles.suggestionsLabel}>Concepts suggérés</Text>
-            <View style={styles.suggestionsWrap}>
-              {SUGGESTIONS.map((s) => (
-                <Pressable
-                  key={s.slug}
-                  onPress={() => ask({ display: s.display, slug: s.slug })}
-                  style={styles.suggestion}
-                >
-                  <Text style={styles.suggestionText}>{s.display}</Text>
-                </Pressable>
-              ))}
-            </View>
+        {busy && (
+          <View style={styles.loadingCard}>
+            <ActivityIndicator color={colors.primary} />
+            <Text style={styles.loadingText}>NexusAI rédige la réponse...</Text>
           </View>
         )}
       </ScrollView>
 
-      <View style={styles.levelRow}>
-        {(['beginner', 'visual', 'advanced'] as ExplanationLevel[]).map((l) => (
-          <Pressable key={l} onPress={() => setLevel(l)} style={[styles.levelBtn, level === l && styles.levelBtnActive]}>
-            <Text style={[styles.levelText, level === l && styles.levelTextActive]}>
-              {l === 'beginner' ? 'Débutant' : l === 'visual' ? 'Visuel' : 'Avancé'}
-            </Text>
-          </Pressable>
-        ))}
-      </View>
-
       <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
         <View style={styles.inputBar}>
-          <Pressable onPress={upload} hitSlop={8} style={styles.iconBtn}>
+          <Pressable onPress={upload} hitSlop={8} style={styles.iconBtn} disabled={busy}>
             <Text style={styles.iconBtnText}>📎</Text>
           </Pressable>
           <TextInput
@@ -217,10 +248,12 @@ export default function NexusAI() {
             placeholderTextColor={colors.textSubtle}
             value={input}
             onChangeText={setInput}
-            onSubmitEditing={() => ask({})}
+            onSubmitEditing={ask}
             returnKeyType="send"
+            editable={!busy}
+            multiline
           />
-          <Pressable onPress={() => ask({})} style={styles.sendBtn} disabled={busy}>
+          <Pressable onPress={ask} style={[styles.sendBtn, busy && styles.sendBtnDisabled]} disabled={busy}>
             <Text style={styles.sendBtnText}>↑</Text>
           </Pressable>
         </View>
@@ -229,33 +262,84 @@ export default function NexusAI() {
   );
 }
 
-function Pill({ label }: { label: string }) {
-  return (
-    <View style={styles.pill}>
-      <Text style={styles.pillText}>{label}</Text>
-    </View>
-  );
-}
-
 const styles = StyleSheet.create({
   root: { flex: 1, backgroundColor: colors.bg },
-  contextRow: {
-    flexDirection: 'row', gap: spacing.sm, paddingHorizontal: spacing.lg,
-    paddingBottom: spacing.md, borderBottomWidth: 1, borderBottomColor: colors.border,
+
+  selectorPanel: {
+    backgroundColor: colors.surface,
+    borderRadius: radius.lg,
+    padding: spacing.md,
+    borderWidth: 1,
+    borderColor: colors.border,
+    marginBottom: spacing.lg,
   },
-  pill: { backgroundColor: colors.primarySoft, paddingHorizontal: spacing.md, paddingVertical: 6, borderRadius: radius.pill },
-  pillText: { color: colors.primary, fontSize: fontSize.xs, fontWeight: '700' },
+  selectorLabel: {
+    color: colors.textMuted,
+    fontSize: fontSize.xs,
+    fontWeight: '800',
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+    marginBottom: spacing.sm,
+  },
+  selectBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingVertical: spacing.sm,
+    paddingHorizontal: spacing.md,
+    borderRadius: radius.md,
+    backgroundColor: colors.surfaceMuted,
+    borderWidth: 1,
+    borderColor: colors.border,
+  },
+  selectText: { flex: 1, color: colors.text, fontSize: fontSize.sm, fontWeight: '700' },
+  selectChevron: { color: colors.primary, fontSize: 18, fontWeight: '900', marginLeft: spacing.sm },
+  selectMenu: {
+    marginTop: spacing.sm,
+    borderWidth: 1,
+    borderColor: colors.border,
+    borderRadius: radius.md,
+    overflow: 'hidden',
+  },
+  selectOption: { paddingVertical: spacing.sm, paddingHorizontal: spacing.md, backgroundColor: colors.surface },
+  selectOptionActive: { backgroundColor: colors.primarySoft },
+  selectOptionText: { color: colors.text, fontSize: fontSize.sm, fontWeight: '600' },
+  selectOptionTextActive: { color: colors.primary, fontWeight: '800' },
+  chapterArea: { marginTop: spacing.md },
+  chapterSelectorLabel: { marginTop: 0 },
+  chapterBox: {
+    marginTop: spacing.md,
+    padding: spacing.md,
+    borderRadius: radius.md,
+    backgroundColor: colors.primarySoft,
+  },
+  chapterLabel: { color: colors.primary, fontSize: fontSize.xs, fontWeight: '800', textTransform: 'uppercase', letterSpacing: 0.5 },
+  chapterTitle: { color: colors.text, fontSize: fontSize.md, fontWeight: '800', marginTop: 2 },
 
   msgRow: { marginBottom: spacing.md },
   msgRowUser: { alignItems: 'flex-end' },
-  bubble: { maxWidth: '85%', padding: spacing.md, borderRadius: radius.lg },
+  bubble: { maxWidth: '88%', padding: spacing.md, borderRadius: radius.lg },
   bubbleAi: { backgroundColor: colors.surface, borderBottomLeftRadius: 4, ...{ shadowColor: '#0B1B45', shadowOpacity: 0.04, shadowRadius: 6, shadowOffset: { width: 0, height: 2 }, elevation: 1 } },
   bubbleUser: { backgroundColor: colors.primary, borderBottomRightRadius: 4 },
   bubbleText: { color: colors.text, fontSize: fontSize.md, lineHeight: 21 },
   bubbleTextUser: { color: '#fff' },
-  fallbackTag: { color: colors.accentOrange, fontSize: fontSize.xs, fontWeight: '700', marginBottom: 6 },
   keyPoint: { color: colors.textMuted, fontSize: fontSize.sm, lineHeight: 20 },
   systemMsg: { color: colors.textSubtle, fontSize: fontSize.sm, fontStyle: 'italic', textAlign: 'center', marginVertical: spacing.sm },
+
+  loadingCard: {
+    alignSelf: 'center',
+    minWidth: 210,
+    flexDirection: 'row',
+    gap: spacing.sm,
+    alignItems: 'center',
+    padding: spacing.md,
+    borderRadius: radius.lg,
+    backgroundColor: colors.surface,
+    borderWidth: 1,
+    borderColor: colors.border,
+    marginTop: spacing.sm,
+  },
+  loadingText: { color: colors.textMuted, fontSize: fontSize.sm, fontWeight: '700' },
 
   videoSection: { marginTop: spacing.md, gap: spacing.xs },
   videoSectionTitle: {
@@ -263,25 +347,21 @@ const styles = StyleSheet.create({
     textTransform: 'uppercase', letterSpacing: 0.6, marginBottom: spacing.sm,
   },
 
-  suggestionsLabel: { fontSize: fontSize.xs, color: colors.textMuted, fontWeight: '700', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: spacing.sm },
-  suggestionsWrap: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm },
-  suggestion: { backgroundColor: colors.surface, paddingHorizontal: spacing.md, paddingVertical: spacing.sm, borderRadius: radius.pill, borderWidth: 1, borderColor: colors.border },
-  suggestionText: { color: colors.text, fontSize: fontSize.sm, fontWeight: '600' },
-
-  levelRow: { flexDirection: 'row', gap: spacing.sm, paddingHorizontal: spacing.lg, paddingTop: spacing.sm },
-  levelBtn: { flex: 1, paddingVertical: 8, borderRadius: radius.pill, backgroundColor: colors.surface, alignItems: 'center', borderWidth: 1, borderColor: colors.border },
-  levelBtnActive: { backgroundColor: colors.primary, borderColor: colors.primary },
-  levelText: { color: colors.textMuted, fontSize: fontSize.sm, fontWeight: '700' },
-  levelTextActive: { color: '#fff' },
-
   inputBar: {
-    flexDirection: 'row', alignItems: 'center', gap: spacing.sm,
+    flexDirection: 'row', alignItems: 'flex-end', gap: spacing.sm,
     paddingHorizontal: spacing.lg, paddingVertical: spacing.md,
     borderTopWidth: 1, borderTopColor: colors.border, backgroundColor: colors.surface,
   },
   iconBtn: { width: 36, height: 36, borderRadius: 18, backgroundColor: colors.surfaceMuted, alignItems: 'center', justifyContent: 'center' },
   iconBtnText: { fontSize: 18 },
-  input: { flex: 1, fontSize: fontSize.md, color: colors.text, paddingVertical: 8 },
+  input: {
+    flex: 1,
+    maxHeight: 96,
+    fontSize: fontSize.md,
+    color: colors.text,
+    paddingVertical: 8,
+  },
   sendBtn: { width: 40, height: 40, borderRadius: 20, backgroundColor: colors.primary, alignItems: 'center', justifyContent: 'center' },
+  sendBtnDisabled: { opacity: 0.55 },
   sendBtnText: { color: '#fff', fontSize: 20, fontWeight: '900' },
 });
