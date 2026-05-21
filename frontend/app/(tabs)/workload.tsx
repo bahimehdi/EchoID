@@ -43,6 +43,7 @@ export default function Workload() {
 
   const data = wq.data;
   const capacityPct = Math.min(100, Math.round((data.wdScore / 0.30) * 100));
+  const capacityStatus = data.status;
   const validatedEcts = 12;
   const inProgressEcts = 18;
   const totalEcts = 30;
@@ -57,9 +58,9 @@ export default function Workload() {
         <Card style={{ marginTop: spacing.lg }}>
           <Text style={styles.cardTitle}>Capacité Actuelle</Text>
           <View style={{ alignItems: 'center', marginVertical: spacing.md }}>
-            <Donut pct={capacityPct} caption={STATUS_LABEL[data.status]} />
+            <Donut pct={capacityPct} caption={STATUS_LABEL[capacityStatus]} />
           </View>
-          <Text style={styles.subText}>{STATUS_HINT[data.status]}</Text>
+          <Text style={styles.subText}>{STATUS_HINT[capacityStatus]}</Text>
         </Card>
 
         <Card style={{ marginTop: spacing.lg }}>
@@ -120,7 +121,7 @@ export default function Workload() {
               </View>
             );
           })}
-          {data.status === 'CRITICAL' || data.status === 'HIGH' ? (
+          {capacityStatus === 'CRITICAL' || capacityStatus === 'HIGH' ? (
             <View style={styles.warning}>
               <Text style={styles.warningText}>
                 ⓘ  Attention : tu as plusieurs échéances rapprochées. Pense à réviser ton emploi du temps pour éviter une surcharge.

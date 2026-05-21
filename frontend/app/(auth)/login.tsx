@@ -129,7 +129,7 @@ const styles = StyleSheet.create({
   root: { padding: spacing.xl, paddingTop: 56, backgroundColor: colors.bg, flexGrow: 1 },
   brand: { alignItems: 'center', marginBottom: spacing.xl },
   appName: { fontSize: fontSize.display, fontWeight: '900', color: colors.text, letterSpacing: -0.5 },
-  uitLogo: { width: 220, height: 90, marginVertical: spacing.md },
+  uitLogo: { width: 500, height: 210, marginVertical: spacing.md },
   tagline: { color: colors.textMuted, fontSize: fontSize.md },
 
   ssoBtn: {

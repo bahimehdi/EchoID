@@ -1,5 +1,8 @@
-import { View, Text, Pressable, StyleSheet, ScrollView, Image } from 'react-native';
+import { View, Text, Pressable, StyleSheet, ScrollView, Image, ActivityIndicator } from 'react-native';
+import { useQuery } from '@tanstack/react-query';
 import { useAuth } from '../../lib/auth';
+import { api, unwrap } from '../../lib/api';
+import type { UserProfileDto } from '../../lib/types';
 import { colors, fontSize, radius, spacing } from '../../lib/theme';
 import Card from '../../components/Card';
 import Badge from '../../components/Badge';
@@ -7,28 +10,50 @@ import Header from '../../components/Header';
 
 const profileImage = require('../../assets/pfp-user.png');
 
+const SCHOOL_LABEL: Record<string, string> = {
+  ENSA: 'ENSA Kénitra',
+  EST: 'EST Kénitra',
+  FAC: 'Faculté des Sciences',
+  OTHER: 'UIT',
+};
+
+const ROLE_LABEL: Record<string, string> = {
+  STUDENT: 'Génie Informatique – 2ème Année',
+  PROFESSOR: 'Professeur',
+  ADMIN: 'Administrateur',
+};
+
 export default function Profile() {
   const { user, clear } = useAuth();
-  const fullName = user?.fullName ?? 'Étudiant';
-  const filiere = user?.role === 'STUDENT' ? 'Génie Informatique – 2ème Année' : (user?.role ?? '');
+
+  const profile = useQuery({
+    queryKey: ['profile'],
+    queryFn: () => unwrap<UserProfileDto>(api.get('/api/users/me')),
+  });
+
+  const fullName = profile.data?.fullName ?? user?.fullName ?? 'Étudiant';
+  const school = profile.data?.school ?? user?.school ?? 'ENSA';
+  const filiere = ROLE_LABEL[profile.data?.role ?? user?.role ?? ''] ?? '';
 
   return (
     <View style={styles.root}>
       <Header />
       <ScrollView contentContainerStyle={{ padding: spacing.xl, paddingBottom: 120 }}>
+        {profile.isLoading && <ActivityIndicator color={colors.primary} style={{ marginTop: spacing.xl }} />}
+
         <View style={{ alignItems: 'center', marginBottom: spacing.lg }}>
           <Image source={profileImage} style={styles.profileImage} resizeMode="cover" />
           <Text style={styles.name}>{fullName}</Text>
           <Text style={styles.role}>{filiere}</Text>
           <View style={{ marginTop: spacing.sm }}>
-            <Badge tone="primary">● Étudiant Actif</Badge>
+            <Badge tone="primary">● {profile.data?.emailVerified ? 'Actif' : 'En attente'}</Badge>
           </View>
         </View>
 
         <Section title="🎓  Informations Académiques">
-          <Row label="Matricule (CNE)" value="K123456789" />
-          <Row label="Établissement" value="ENSA Kénitra" />
-          <Row label="Filière" value="Génie Logiciel" />
+          <Row label="Email" value={profile.data?.email ?? user?.email ?? '-'} />
+          <Row label="Établissement" value={SCHOOL_LABEL[school] ?? school} />
+          <Row label="Rôle" value={ROLE_LABEL[profile.data?.role ?? user?.role ?? ''] ?? profile.data?.role ?? user?.role ?? '-'} />
         </Section>
 
         <Section title="⚙  Préférences">

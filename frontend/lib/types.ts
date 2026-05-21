@@ -2,6 +2,17 @@
 
 export type ApiEnvelope<T> = { success: boolean; data: T; message?: string };
 
+export type UserProfileDto = {
+  id: string;
+  email: string;
+  fullName?: string;
+  picture?: string;
+  role: string;
+  school: string;
+  emailVerified: boolean;
+  createdAt: string;
+};
+
 export type LmsSource = 'MOODLE' | 'GOOGLE_CLASSROOM';
 export type Semester = 'S1' | 'S2' | 'ANNUAL';
 export type ExplanationLevel = 'beginner' | 'visual' | 'advanced';
@@ -79,8 +90,10 @@ export type WdResponseDto = {
 export type NotificationDto = {
   id: string;
   type: 'WORKLOAD_ALERT' | 'DEADLINE_REMINDER' | 'MILESTONE_NUDGE' | 'SYSTEM';
-  title: string;
-  body: string;
-  read: boolean;
-  createdAt: string;
+  channel?: string;
+  message: string;
+  isRead: boolean;
+  sentAt: string;
+  readAt?: string;
+  assignmentId?: string;
 };

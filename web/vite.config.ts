@@ -11,6 +11,10 @@ export default defineConfig({
         target: process.env.BACKEND_URL ?? 'http://localhost:8080',
         changeOrigin: true,
       },
+      '/ai': {
+        target: process.env.AI_SERVICE_URL ?? 'http://localhost:8000',
+        changeOrigin: true,
+      },
     },
   },
 });

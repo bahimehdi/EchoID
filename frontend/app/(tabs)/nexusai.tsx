@@ -5,7 +5,7 @@ import {
 } from 'react-native';
 import * as DocumentPicker from 'expo-document-picker';
 import { api, unwrap } from '../../lib/api';
-import type { OcrResponse } from '../../lib/types';
+import type { OcrResponse, ExplainResponse, ExplanationLevel } from '../../lib/types';
 import { colors, fontSize, radius, spacing } from '../../lib/theme';
 import VideoCard, { VideoCardProps } from '../../components/VideoCard';
 
@@ -28,54 +28,29 @@ const MODULES = [
   'Algorithmique & Programmation (Python)',
 ];
 
+const MODULE_SLUG: Record<string, string> = {
+  'Algèbre linéaire et calcul matriciel': 'algebre-diagonalisation',
+  'Thermodynamique générale': 'thermo-1er-principe',
+  'Chimie': 'chimie-equilibre',
+  'Probabilités et statistiques': 'proba-bayes',
+  'Traitement du signal': 'signal-fourier',
+  'Algorithmique & Programmation (Python)': 'algo-recursivite',
+};
+
 const CHAPTERS = ['Chapitre 1', 'Chapitre 2', 'Chapitre 3', 'Chapitre 4'];
 
-const DEMO_EXPLANATION = `Dans ton TD, le point décisif n’est pas seulement le fait que la matrice ait une seule valeur propre λ de multiplicité algébrique 3. Ce qui décide la diagonalisation, c’est la dimension de l’espace propre associé.
-
-Tu dois résoudre (A - λI₃)X = 0. L’ensemble des solutions est Eλ = Ker(A - λI₃). Si dim(Eλ) = 3, alors tu as trois vecteurs propres linéairement indépendants dans R³ : la matrice est diagonalisable. Tu formes alors P avec ces trois vecteurs propres en colonnes, et D = diag(λ, λ, λ), donc A = PDP⁻¹.
-
-Si dim(Eλ) vaut 1 ou 2, il manque des vecteurs propres pour former une base de R³ : la matrice n’est pas diagonalisable.
-
-Cas important pour ton oral : une matrice 3x3 qui n’a qu’une seule valeur propre peut être diagonalisable seulement si son espace propre est de dimension 3. Dans ce cas, comme D = λI₃, on obtient même A = λI₃. Donc en pratique, si A n’est pas déjà égale à λI₃, elle ne sera pas diagonalisable dans ce scénario.`;
-
-const DEMO_KEY_POINTS = [
-  'Multiplicité algébrique : λ apparaît trois fois dans le polynôme caractéristique.',
-  'Multiplicité géométrique : dim Ker(A - λI₃). C’est elle qu’il faut calculer.',
-  'Diagonalisable ⇔ multiplicité géométrique = multiplicité algébrique = 3.',
-  'Si la dimension est 3, P est formée avec trois vecteurs propres indépendants et D = λI₃.',
+const LEVELS: { key: ExplanationLevel; label: string }[] = [
+  { key: 'visual', label: 'Visuel' },
+  { key: 'beginner', label: 'Débutant' },
+  { key: 'advanced', label: 'Avancé' },
 ];
-
-const DEMO_VIDEOS: VideoCardProps[] = [
-  {
-    title: 'Vidéo exacte — matrice 3x3 avec une seule valeur propre',
-    channel: 'YouTube',
-    url: 'https://www.youtube.com/watch?v=l1GM65A-VR4',
-    videoId: 'l1GM65A-VR4',
-    thumbnailUrl: 'https://i.ytimg.com/vi/l1GM65A-VR4/hqdefault.jpg',
-  },
-  {
-    title: 'Diagonaliser une matrice 3×3 — exercice',
-    channel: 'Maths-Et-Tiques',
-    url: 'https://www.youtube.com/watch?v=EUtdnH4jQpo',
-    videoId: 'EUtdnH4jQpo',
-    thumbnailUrl: 'https://i.ytimg.com/vi/EUtdnH4jQpo/hqdefault.jpg',
-  },
-  {
-    title: 'Polynôme caractéristique, valeurs propres et diagonalisation',
-    channel: 'Maths Express',
-    url: 'https://www.youtube.com/watch?v=300lX-fnIEg',
-    videoId: '300lX-fnIEg',
-    thumbnailUrl: 'https://i.ytimg.com/vi/300lX-fnIEg/hqdefault.jpg',
-  },
-];
-
-const wait = (ms: number) => new Promise<void>((resolve) => setTimeout(resolve, ms));
 
 export default function NexusAI() {
   const [input, setInput] = useState('');
   const [busy, setBusy] = useState(false);
   const [selectedModule, setSelectedModule] = useState(MODULES[0]);
   const [selectedChapter, setSelectedChapter] = useState('Chapitre 3');
+  const [selectedLevel, setSelectedLevel] = useState<ExplanationLevel>('visual');
   const [moduleOpen, setModuleOpen] = useState(false);
   const [chapterOpen, setChapterOpen] = useState(false);
   const [messages, setMessages] = useState<ChatMsg[]>([]);
@@ -89,19 +64,38 @@ export default function NexusAI() {
     const display = input.trim();
     if (!display || busy) return;
 
+    const slug = MODULE_SLUG[selectedModule] ?? 'algebre-diagonalisation';
     setInput('');
     setBusy(true);
     setMessages((prev) => [...prev, { role: 'user', text: display }]);
 
     try {
-      await wait(3000);
+      const [explainRes, videosRes] = await Promise.allSettled([
+        unwrap<ExplainResponse>(api.post('/api/ai/explain', { conceptSlug: slug, level: selectedLevel })),
+        api.post('/api/ai/videos', { conceptSlug: slug }),
+      ]);
+
+      const explain = explainRes.status === 'fulfilled' ? explainRes.value : null;
+
+      let videos: VideoCardProps[] = [];
+      if (videosRes.status === 'fulfilled') {
+        const vData: any = videosRes.value.data?.data ?? videosRes.value.data;
+        videos = (vData?.videos ?? []).map((v: any) => ({
+          title: v.title ?? 'Vidéo',
+          channel: v.channel ?? v.channelTitle ?? 'YouTube',
+          url: `https://www.youtube.com/watch?v=${v.videoId}`,
+          videoId: v.videoId,
+          thumbnailUrl: v.thumbnailUrl ?? v.thumbnail ?? `https://i.ytimg.com/vi/${v.videoId}/hqdefault.jpg`,
+        }));
+      }
+
       setMessages((prev) => [
         ...prev,
         {
           role: 'assistant',
-          text: DEMO_EXPLANATION,
-          keyPoints: DEMO_KEY_POINTS,
-          videos: DEMO_VIDEOS,
+          text: explain?.explanation ?? 'Désolé, l\'explication n\'est pas disponible pour le moment.',
+          keyPoints: explain?.keyPoints,
+          videos: videos.length > 0 ? videos : undefined,
         },
       ]);
     } finally {
@@ -200,6 +194,20 @@ export default function NexusAI() {
               )}
             </View>
           )}
+          <Text style={[styles.selectorLabel, { marginTop: spacing.md }]}>Niveau d’explication</Text>
+          <View style={styles.levelRow}>
+            {LEVELS.map((l) => (
+              <Pressable
+                key={l.key}
+                style={[styles.levelBtn, selectedLevel === l.key && styles.levelBtnActive]}
+                onPress={() => setSelectedLevel(l.key)}
+              >
+                <Text style={[styles.levelBtnText, selectedLevel === l.key && styles.levelBtnTextActive]}>
+                  {l.label}
+                </Text>
+              </Pressable>
+            ))}
+          </View>
         </View>
 
         {messages.map((m, i) => (
@@ -340,6 +348,15 @@ const styles = StyleSheet.create({
     marginTop: spacing.sm,
   },
   loadingText: { color: colors.textMuted, fontSize: fontSize.sm, fontWeight: '700' },
+
+  levelRow: { flexDirection: 'row', gap: spacing.sm, marginTop: spacing.sm },
+  levelBtn: {
+    flex: 1, paddingVertical: spacing.sm, borderRadius: radius.md,
+    backgroundColor: colors.surfaceMuted, alignItems: 'center', borderWidth: 1, borderColor: colors.border,
+  },
+  levelBtnActive: { backgroundColor: colors.primary, borderColor: colors.primary },
+  levelBtnText: { fontSize: fontSize.sm, fontWeight: '700', color: colors.text },
+  levelBtnTextActive: { color: '#fff' },
 
   videoSection: { marginTop: spacing.md, gap: spacing.xs },
   videoSectionTitle: {

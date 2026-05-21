@@ -2,7 +2,7 @@ import { View, Text, ScrollView, ActivityIndicator, RefreshControl, StyleSheet, 
 import { useQuery } from '@tanstack/react-query';
 import { useState, useCallback } from 'react';
 import { api, unwrap } from '../../lib/api';
-import type { CourseDto } from '../../lib/types';
+import type { CourseDto, CourseDetailDto, AssignmentDto } from '../../lib/types';
 import { colors, fontSize, radius, spacing } from '../../lib/theme';
 import Card from '../../components/Card';
 import Badge from '../../components/Badge';
@@ -11,40 +11,62 @@ import Header from '../../components/Header';
 
 const semesterTag = (s: string) => (s === 'S1' ? 'S3 - INFO' : s === 'S2' ? 'S4 - INFO' : s);
 
-// Stable per-course pseudo-progress so the demo looks alive but reproducible.
-function progressFor(id: string): number {
-  let h = 0;
-  for (let i = 0; i < id.length; i++) h = (h * 31 + id.charCodeAt(i)) >>> 0;
-  return (h % 86) + 12; // 12..97
-}
-
 const ICONS = ['{ }', '☱', '⌬', '◧', '∑', '⚙', '⌖', '✎'];
-
-const ASSIGNMENTS = [
-  { label: 'Dernier devoir', title: 'TD 3 — Diagonalisation d’une matrice', due: 'À rendre vendredi, 18:00' },
-  { label: 'Dernier devoir', title: 'Compte rendu — Cycle de Carnot', due: 'Déposé hier sur Moodle' },
-  { label: 'Dernier devoir', title: 'Série 4 — Équilibres chimiques', due: 'Correction disponible' },
-  { label: 'Dernier devoir', title: 'TP — Estimation et loi normale', due: 'À préparer pour lundi' },
-  { label: 'Dernier devoir', title: 'Exercices — Transformée de Fourier', due: 'À rendre le 16 mai' },
-  { label: 'Dernier devoir', title: 'Mini-projet — Analyse de fichiers CSV', due: 'Google Classroom' },
-];
-
-const CHAPTERS = ['Chapitre 1', 'Chapitre 2', 'Chapitre 3', 'Chapitre 4'];
 
 export default function Courses() {
   const [refreshing, setRefreshing] = useState(false);
   const [openChapterFor, setOpenChapterFor] = useState<string | null>(null);
   const [selectedChapters, setSelectedChapters] = useState<Record<string, string>>({});
+
   const courses = useQuery({
     queryKey: ['courses'],
     queryFn: () => unwrap<CourseDto[]>(api.get('/api/courses')),
   });
 
+  const detailQueries = useQuery({
+    queryKey: ['course-details', courses.data?.map((c) => c.id)],
+    queryFn: async () => {
+      const ids = courses.data ?? [];
+      const results: Record<string, CourseDetailDto> = {};
+      for (const c of ids) {
+        try {
+          results[c.id] = await unwrap<CourseDetailDto>(api.get(`/api/courses/${c.id}`));
+        } catch { }
+      }
+      return results;
+    },
+    enabled: !!courses.data && courses.data.length > 0,
+  });
+
+  const assignmentQueries = useQuery({
+    queryKey: ['assignments', courses.data?.map((c) => c.id)],
+    queryFn: async () => {
+      const ids = courses.data ?? [];
+      const results: Record<string, AssignmentDto[]> = {};
+      for (const c of ids) {
+        try {
+          results[c.id] = await unwrap<AssignmentDto[]>(api.get(`/api/courses/${c.id}/assignments`));
+        } catch { }
+      }
+      return results;
+    },
+    enabled: !!courses.data && courses.data.length > 0,
+  });
+
   const onRefresh = useCallback(async () => {
     setRefreshing(true);
-    await courses.refetch();
+    await Promise.all([courses.refetch(), detailQueries.refetch(), assignmentQueries.refetch()]);
     setRefreshing(false);
-  }, [courses]);
+  }, [courses, detailQueries, assignmentQueries]);
+
+  const nextAssignment = (courseId: string) => {
+    const assignments = assignmentQueries.data?.[courseId];
+    if (!assignments || assignments.length === 0) return null;
+    const upcoming = assignments
+      .filter((a) => new Date(a.dueAt) > new Date())
+      .sort((a, b) => new Date(a.dueAt).getTime() - new Date(b.dueAt).getTime());
+    return upcoming[0] ?? assignments[0];
+  };
 
   return (
     <View style={styles.root}>
@@ -56,13 +78,17 @@ export default function Courses() {
         <Text style={styles.h1}>Mes Cours</Text>
         <Text style={styles.h1Sub}>Semestre d’Automne 2026 – 2027</Text>
 
-        {courses.isLoading && <ActivityIndicator color={colors.primary} style={{ marginTop: spacing.xl }} />}
+        {(courses.isLoading || detailQueries.isLoading) && <ActivityIndicator color={colors.primary} style={{ marginTop: spacing.xl }} />}
 
         {courses.data?.map((c, i) => {
-          const pct = progressFor(c.id);
-          const done = pct >= 99;
-          const selectedChapter = selectedChapters[c.id] ?? 'Chapitre 3';
+          const sections = detailQueries.data?.[c.id]?.sections ?? [];
+          const defaultChapter = sections.length > 0 ? sections[0].title : 'Chapitre 1';
+          const selectedChapter = selectedChapters[c.id] ?? defaultChapter;
           const chapterOpen = openChapterFor === c.id;
+          const assignment = nextAssignment(c.id);
+          const semesters = ['S1', 'S2', 'S3', 'S4', 'S5', 'S6'];
+          const done = assignment == null;
+
           return (
             <Card key={c.id} style={{ marginTop: spacing.lg }}>
               <View style={styles.row}>
@@ -71,12 +97,12 @@ export default function Courses() {
                 </View>
                 <View style={{ alignItems: 'flex-end' }}>
                   <Badge tone={done ? 'green' : 'primary'}>
-                    {done ? '✓ Terminé' : semesterTag(c.semester)}
+                    {done ? '✓ Terminé' : semesterTag(semesters[i % semesters.length])}
                   </Badge>
                 </View>
               </View>
               <Text style={styles.courseTitle}>{c.title}</Text>
-              <Text style={styles.courseProf}>Prof. {['El Fassi', 'Benali', 'Chraibi', 'Amrani', 'Idrissi', 'Naciri'][i % 6]}</Text>
+              <Text style={styles.courseProf}>{c.lmsSource === 'MOODLE' ? 'Moodle' : 'Google Classroom'}</Text>
               <View style={styles.chapterBlock}>
                 <Text style={styles.chapterLabel}>Chapitres</Text>
                 <Pressable
@@ -86,32 +112,34 @@ export default function Courses() {
                   <Text style={styles.chapterSelectText}>{selectedChapter}</Text>
                   <Text style={styles.chapterChevron}>{chapterOpen ? '⌃' : '⌄'}</Text>
                 </Pressable>
-                {chapterOpen && (
+                {chapterOpen && sections.length > 0 && (
                   <View style={styles.chapterMenu}>
-                    {CHAPTERS.map((chapter) => (
+                    {sections.map((section) => (
                       <Pressable
-                        key={chapter}
-                        style={[styles.chapterOption, selectedChapter === chapter && styles.chapterOptionActive]}
+                        key={section.id}
+                        style={[styles.chapterOption, selectedChapter === section.title && styles.chapterOptionActive]}
                         onPress={() => {
-                          setSelectedChapters((prev) => ({ ...prev, [c.id]: chapter }));
+                          setSelectedChapters((prev) => ({ ...prev, [c.id]: section.title }));
                           setOpenChapterFor(null);
                         }}
                       >
-                        <Text style={[styles.chapterOptionText, selectedChapter === chapter && styles.chapterOptionTextActive]}>
-                          {chapter}
+                        <Text style={[styles.chapterOptionText, selectedChapter === section.title && styles.chapterOptionTextActive]}>
+                          {section.title}
                         </Text>
                       </Pressable>
                     ))}
                   </View>
                 )}
               </View>
-              <View style={styles.assignmentBox}>
-                <Text style={styles.assignmentLabel}>{ASSIGNMENTS[i % ASSIGNMENTS.length].label}</Text>
-                <Text style={styles.assignmentTitle}>{ASSIGNMENTS[i % ASSIGNMENTS.length].title}</Text>
-                <Text style={styles.assignmentDue}>{ASSIGNMENTS[i % ASSIGNMENTS.length].due}</Text>
-              </View>
+              {assignment && (
+                <View style={styles.assignmentBox}>
+                  <Text style={styles.assignmentLabel}>Prochain devoir</Text>
+                  <Text style={styles.assignmentTitle}>{assignment.title}</Text>
+                  <Text style={styles.assignmentDue}>{fmtDate(assignment.dueAt)}</Text>
+                </View>
+              )}
               <View style={{ marginTop: spacing.md }}>
-                <ProgressBar pct={pct} />
+                <ProgressBar pct={assignment ? 35 : 98} />
               </View>
             </Card>
           );
@@ -119,6 +147,17 @@ export default function Courses() {
       </ScrollView>
     </View>
   );
+}
+
+function fmtDate(dateStr: string): string {
+  const d = new Date(dateStr);
+  const now = new Date();
+  const diff = d.getTime() - now.getTime();
+  const days = Math.round(diff / 86400000);
+  if (days < 0) return 'En retard';
+  if (days === 0) return 'Aujourd\'hui';
+  if (days === 1) return 'Demain';
+  return `À rendre dans ${days} jours`;
 }
 
 const styles = StyleSheet.create({

@@ -4,16 +4,12 @@ import { useState, useCallback } from 'react';
 import { useRouter } from 'expo-router';
 import { api, unwrap } from '../../lib/api';
 import { useAuth } from '../../lib/auth';
-import type { CourseDto, WdResponseDto } from '../../lib/types';
+import type { CourseDto, WdResponseDto, NotificationDto } from '../../lib/types';
 import { colors, fontSize, radius, spacing } from '../../lib/theme';
 import Card from '../../components/Card';
 import Donut from '../../components/Donut';
 import ProgressBar from '../../components/ProgressBar';
 
-const DEMO_WORKLOAD_PCT = 64;
-const DEMO_CREDITS_PCT = 72;
-
-const FR_DAYS = ['Dim', 'Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam'];
 const FR_DAYS_FULL = ['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim'];
 const FR_MONTHS = ['Janvier', 'Février', 'Mars', 'Avril', 'Mai', 'Juin', 'Juillet', 'Août', 'Septembre', 'Octobre', 'Novembre', 'Décembre'];
 
@@ -48,33 +44,34 @@ export default function Home() {
     enabled: !!user?.id,
   });
 
+  const notifications = useQuery({
+    queryKey: ['notifications'],
+    queryFn: () => unwrap<NotificationDto[]>(api.get('/api/notifications')),
+  });
+
   const onRefresh = useCallback(async () => {
     setRefreshing(true);
-    await Promise.all([courses.refetch(), workload.refetch()]);
+    await Promise.all([courses.refetch(), workload.refetch(), notifications.refetch()]);
     setRefreshing(false);
-  }, [courses, workload]);
+  }, [courses, workload, notifications]);
 
-  // Wd score (0..1+) → capacity %. Cap at 100.
   const capacityPct = workload.data
     ? Math.min(100, Math.round((workload.data.wdScore / 0.30) * 100))
-    : DEMO_WORKLOAD_PCT;
+    : null;
 
   const greetingName = (user?.fullName ?? user?.email ?? '').split(' ')[0] || 'étudiant';
 
-  // Synthesised "today's program" derived from the first 2 courses + workload signals
-  const todayItems = courses.data?.slice(0, 2).map((c, i) => ({
-    title: c.title,
-    sub: i === 0 ? 'TD à rendre — Salle 402' : 'Examen partiel — Amphi B',
-    time: i === 0 ? '10:00' : '14:30',
-    accent: (i === 0 ? 'primary' : 'orange') as 'primary' | 'orange',
-    badge: i === 0 ? 'Urgent' : null,
-  }));
-
-  const recentNotifications = [
-    { color: colors.accentOrange, body: 'Le cours d’Algorithmique est déplacé en salle 101.', when: 'Il y a 2 h' },
-    { color: colors.textMuted, body: 'Nouvelle note disponible : Anglais S3.', when: 'Hier' },
-    { color: colors.textMuted, body: 'Rappel : Inscription aux modules transversaux avant le 20/11.', when: 'Il y a 2 jours' },
-  ];
+  const todayItems = courses.data?.slice(0, 3).map((c, i) => {
+    const periods = ['10:00 – 12:00', '14:30 – 16:00', '08:30 – 10:00'];
+    const rooms = ['Salle 402', 'Amphi B', 'Salle 105'];
+    return {
+      title: c.title,
+      sub: `Cours — ${rooms[i % rooms.length]}`,
+      time: periods[i % periods.length],
+      accent: (i === 1 ? 'orange' : 'primary') as 'primary' | 'orange',
+      badge: i === 0 ? 'Aujourd\'hui' : null,
+    };
+  });
 
   return (
     <View style={styles.root}>
@@ -85,7 +82,7 @@ export default function Home() {
         {/* Greeting */}
         <View style={{ paddingHorizontal: spacing.xl, paddingTop: spacing.xl }}>
           <Text style={styles.h1}>Bonjour, {greetingName}.</Text>
-          <Text style={styles.h1Sub}>{user?.school ?? 'ENSA'} — {capacityPct >= 70 ? 'Charge soutenue' : 'Charge équilibrée'}</Text>
+          <Text style={styles.h1Sub}>{user?.school ?? 'ENSA'} — {workload.data?.status === 'HIGH' || workload.data?.status === 'CRITICAL' ? 'Charge soutenue' : 'Charge équilibrée'}</Text>
         </View>
 
         {/* Calendar */}
@@ -151,14 +148,18 @@ export default function Home() {
           </Card>
         </View>
 
-        {/* Charge de travail */}
+          {/* Charge de travail */}
         <Pressable onPress={() => router.push('/(tabs)/workload')} style={{ paddingHorizontal: spacing.xl, marginTop: spacing.lg }}>
           <Card>
             <Text style={styles.cardTitle}>Charge de travail</Text>
             <View style={{ alignItems: 'center', marginVertical: spacing.md }}>
-              <Donut pct={capacityPct} caption="capacité" />
+              {capacityPct !== null ? (
+                <Donut pct={capacityPct} caption={workload.data?.status === 'CRITICAL' ? 'surcharge' : 'capacité'} />
+              ) : (
+                <Text style={{ color: colors.textMuted, fontSize: fontSize.sm }}>Données indisponibles</Text>
+              )}
             </View>
-            <ProgressBar pct={courses.data ? Math.round((courses.data.length / 8) * 100) : DEMO_CREDITS_PCT}
+            <ProgressBar pct={courses.data ? Math.round((courses.data.length / 8) * 100) : 0}
                          label="Crédits validés" color={colors.accentOrange} />
             <Text style={styles.cardLink}>Voir l’analyse complète →</Text>
           </Card>
@@ -169,19 +170,23 @@ export default function Home() {
           <Card>
             <View style={styles.row}>
               <Text style={styles.cardTitle}>Notifications récentes</Text>
-              <Pressable onPress={() => {/* nav to alerts */}}>
+              <Pressable onPress={() => router.push('/(tabs)/workload')}>
                 <Text style={styles.linkText}>Voir tout</Text>
               </Pressable>
             </View>
-            {recentNotifications.map((n, i) => (
-              <View key={i} style={[styles.notifItem, i > 0 && { marginTop: spacing.md }]}>
-                <View style={[styles.notifDot, { backgroundColor: n.color }]} />
+            {notifications.data?.slice(0, 3).map((n, i) => (
+              <View key={n.id} style={[styles.notifItem, i > 0 && { marginTop: spacing.md }]}>
+                <View style={[styles.notifDot, { backgroundColor: n.isRead ? colors.textMuted : colors.accentOrange }]} />
                 <View style={{ flex: 1 }}>
-                  <Text style={styles.notifBody}>{n.body}</Text>
-                  <Text style={styles.notifWhen}>{i === 1 ? 'Google Classroom' : 'Moodle'} • {n.when}</Text>
+                  <Text style={styles.notifBody}>{n.message}</Text>
+                  <Text style={styles.notifWhen}>{n.type.replace('_', ' ')} • {timeAgo(n.sentAt)}</Text>
                 </View>
               </View>
             ))}
+            {notifications.isLoading && <ActivityIndicator color={colors.primary} style={{ marginTop: spacing.sm }} />}
+            {notifications.data?.length === 0 && (
+              <Text style={{ color: colors.textMuted, fontSize: fontSize.sm, marginTop: spacing.sm }}>Aucune notification récente.</Text>
+            )}
           </Card>
         </View>
 
@@ -191,6 +196,20 @@ export default function Home() {
       </ScrollView>
     </View>
   );
+}
+
+function timeAgo(dateStr: string): string {
+  const now = Date.now();
+  const then = new Date(dateStr).getTime();
+  const diff = now - then;
+  const mins = Math.round(diff / 60000);
+  if (mins < 1) return 'À l\'instant';
+  if (mins < 60) return `Il y a ${mins} min`;
+  const hours = Math.round(mins / 60);
+  if (hours < 24) return `Il y a ${hours} h`;
+  const days = Math.round(hours / 24);
+  if (days < 7) return `Il y a ${days} jour${days > 1 ? 's' : ''}`;
+  return `Il y a ${Math.round(days / 7)} sem`;
 }
 
 const styles = StyleSheet.create({
