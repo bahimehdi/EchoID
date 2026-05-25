@@ -8,7 +8,6 @@ import { colors, fontSize, radius, spacing } from '../../lib/theme';
 import Card from '../../components/Card';
 import Header from '../../components/Header';
 import Donut from '../../components/Donut';
-import ProgressBar from '../../components/ProgressBar';
 
 const STATUS_LABEL = { LOW: 'Optimale', MODERATE: 'Soutenable', HIGH: 'Élevée', CRITICAL: 'Surcharge' } as const;
 const STATUS_HINT = {
@@ -44,9 +43,6 @@ export default function Workload() {
   const data = wq.data;
   const capacityPct = Math.min(100, Math.round((data.wdScore / 0.30) * 100));
   const capacityStatus = data.status;
-  const validatedEcts = 12;
-  const inProgressEcts = 18;
-  const totalEcts = 30;
 
   return (
     <View style={styles.root}>
@@ -63,30 +59,7 @@ export default function Workload() {
           <Text style={styles.subText}>{STATUS_HINT[capacityStatus]}</Text>
         </Card>
 
-        <Card style={{ marginTop: spacing.lg }}>
-          <View style={styles.rowBetween}>
-            <Text style={styles.cardTitle}>Progression des Crédits ECTS</Text>
-            <View style={styles.totalPill}>
-              <Text style={styles.totalPillText}>Total: {totalEcts} ECTS</Text>
-            </View>
-          </View>
-          <View style={{ marginTop: spacing.md, gap: spacing.md }}>
-            <ProgressBar
-              pct={(validatedEcts / totalEcts) * 100}
-              label={`Validés (${validatedEcts} ECTS)`}
-              color={colors.primary}
-            />
-            <ProgressBar
-              pct={(inProgressEcts / totalEcts) * 100}
-              label={`En cours (${inProgressEcts} ECTS)`}
-              color="#93B0E5"
-            />
-          </View>
-          <View style={styles.legendRow}>
-            <LegendDot color={colors.primary} label="Validés" />
-            <LegendDot color="#93B0E5" label="En cours" />
-          </View>
-        </Card>
+
 
         <Card style={{ marginTop: spacing.lg, padding: 0 }}>
           <View style={[styles.rowBetween, { padding: spacing.lg, paddingBottom: spacing.md }]}>
@@ -141,15 +114,6 @@ export default function Workload() {
   );
 }
 
-function LegendDot({ color, label }: { color: string; label: string }) {
-  return (
-    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginRight: spacing.lg }}>
-      <View style={{ width: 8, height: 8, borderRadius: 4, backgroundColor: color }} />
-      <Text style={{ color: colors.textMuted, fontSize: fontSize.xs }}>{label}</Text>
-    </View>
-  );
-}
-
 function TrendChart({ history }: { history: WdResponseDto['history'] }) {
   // Take the last 8 points to mirror the Figma's S1..S8 axis.
   const pts = history.slice(-8);
@@ -200,10 +164,6 @@ const styles = StyleSheet.create({
   cardTitle: { fontSize: fontSize.lg, fontWeight: '800', color: colors.text },
   subText: { color: colors.textMuted, fontSize: fontSize.sm, textAlign: 'center', marginTop: spacing.xs },
   rowBetween: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
-  totalPill: { backgroundColor: colors.primarySoft, paddingHorizontal: spacing.md, paddingVertical: 4, borderRadius: radius.pill },
-  totalPillText: { color: colors.primary, fontSize: fontSize.xs, fontWeight: '700' },
-  legendRow: { flexDirection: 'row', marginTop: spacing.md },
-
   tableHead: { flexDirection: 'row', backgroundColor: colors.surfaceMuted, paddingVertical: 8, paddingHorizontal: spacing.lg },
   thCell: { fontSize: fontSize.xs, fontWeight: '800', color: colors.textMuted, letterSpacing: 0.5 },
   tableRow: { flexDirection: 'row', alignItems: 'flex-start', paddingVertical: spacing.md, paddingHorizontal: spacing.lg, borderBottomWidth: 1, borderBottomColor: colors.border },

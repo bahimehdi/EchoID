@@ -6,8 +6,8 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 
 class Settings(BaseSettings):
     port: int = 8000
-    # Demo posture: AI/YouTube responses are fixture-backed, so these keys are
-    # optional. They become required only when the production swap-in is wired.
+    # When empty or missing, features fall back gracefully (no search results,
+    # fallback explanation, empty OCR) instead of crashing.
     llm_api_key: str = ""
     google_api_key: str = ""
     youtube_api_key: str = ""

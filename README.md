@@ -1,22 +1,20 @@
-# EchoID Nexus
+# EchoID Nexus (MVP)
 
-EchoID Nexus is an AI-integrated layer **on top of** existing university LMS platforms (Moodle, Google Classroom) — augmenting them with level-adapted explanations, OCR ingestion, and predictive workload modeling instead of replacing them.
+> **Minimum Viable Product** — real AI-driven explanations, OCR ingestion, transcript-based video ranking, and predictive workload modelling, integrated on top of university LMS platforms (Moodle, Google Classroom).
 
-**Pilot scope (competition demo):** ENSAK preparatory cycle — CP1 (S1+S2) and CP2 (S3+S4). Course catalogue is grounded in the real ENSAK syllabus. The same architecture extends to the rest of UIT (ENSA, EST, FAC) by adding rows to the same fixtures.
+EchoID Nexus is an AI-integrated layer **on top of** existing university LMS platforms — augmenting them with level-adapted explanations (Gemini 1.5 Flash), OCR ingestion (Tesseract), semantic video ranking (YouTube Transcript API + TF-IDF), and predictive workload modelling — instead of replacing them.
 
-**Demo posture:** the live demo runs offline — no AI / YouTube API keys required. The AI service is backed by a curated fixture catalogue keyed by concept slug. See [`.context/POSITIONING.md`](./.context/POSITIONING.md) and [`.context/DEMO_FALLBACKS.md`](./.context/DEMO_FALLBACKS.md) for details.
+**Status:** Competition MVP. The AI service uses real APIs (Gemini, Tesseract, YouTube Data API, youtube-transcript-api) with graceful fallbacks when keys are absent, rather than fixture files. All AI JSON fixtures have been removed.
 
 ## Architecture & Services
 
 The project is structured into distinct services:
 
 - **[`backend/`](./backend)**: Spring Boot 3 / Java 21. Auth (JWT + refresh, OAuth2 Google), RBAC, course/LMS aggregation, events, workload, notifications.
-- **[`ai-service/`](./ai-service)**: FastAPI 0.111 / Python 3.11. Explainer, OCR, YouTube — fixture-backed for the demo (see `.context/DEMO_FALLBACKS.md`).
-- **[`frontend/`](./frontend)**: React Native (Expo, TypeScript) — student mobile app.
-- **`web/`**: Vite + React (TS) — professor / admin dashboards with Grafana iframes.
+- **[`ai-service/`](./ai-service)**: FastAPI 0.111 / Python 3.11. Gemini-powered explainer, Tesseract OCR (PDF+images), YouTube Transcript + TF-IDF video ranking, predictive workload scoring.
+- **[`frontend/`](./frontend)**: React Native (Expo, TypeScript) — student mobile app with real API calls, no hardcoded fallback data.
+- **`web/`**: Vite + React (TS) — professor / admin dashboards with TanStack Query.
 - **PostgreSQL 16** + **Grafana** containers managed by docker-compose.
-
-*For detailed API contracts, see the `docs/` folder (e.g. [`ai_api_contract.md`](./docs/ai_api_contract.md)).*
 
 ## Prerequisites
 

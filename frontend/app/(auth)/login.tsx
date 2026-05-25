@@ -29,12 +29,6 @@ export default function Login() {
     }
   };
 
-  // Demo shortcut — tap the SSO button to auto-fill the demo student account.
-  const ssoDemo = () => {
-    setEmail('mehdi.bahi@uit.ac.ma');
-    setPassword('Demo!2026');
-  };
-
   return (
     <ScrollView contentContainerStyle={styles.root} keyboardShouldPersistTaps="handled">
       <View style={styles.brand}>
@@ -45,17 +39,6 @@ export default function Login() {
           resizeMode="contain"
         />
         <Text style={styles.tagline}>Accès sécurisé à votre espace académique</Text>
-      </View>
-
-      <Pressable onPress={ssoDemo} style={styles.ssoBtn}>
-        <View style={styles.ssoIcon} />
-        <Text style={styles.ssoText}>Continuer avec @uit.ac.ma</Text>
-      </Pressable>
-
-      <View style={styles.divider}>
-        <View style={styles.dividerLine} />
-        <Text style={styles.dividerText}>ou</Text>
-        <View style={styles.dividerLine} />
       </View>
 
       <View style={styles.card}>

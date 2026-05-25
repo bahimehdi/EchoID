@@ -9,7 +9,7 @@ Quota cost: 1 unit per 50 video IDs requested. The default daily quota
 is 10,000 units, so this is essentially free at our scale.
 
 Falls back gracefully to the fixture's own metadata when:
-  - the API key is missing / empty (demo posture)
+  - the API key is missing / empty (graceful fallback — returns empty result)
   - the call fails (network / quota)
   - a particular video ID is no longer available
 

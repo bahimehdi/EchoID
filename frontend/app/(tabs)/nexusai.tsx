@@ -4,8 +4,9 @@ import {
   StyleSheet, KeyboardAvoidingView, Platform,
 } from 'react-native';
 import * as DocumentPicker from 'expo-document-picker';
+import { useQuery } from '@tanstack/react-query';
 import { api, unwrap } from '../../lib/api';
-import type { OcrResponse, ExplainResponse, ExplanationLevel } from '../../lib/types';
+import type { OcrResponse, ExplainResponse, ExplanationLevel, CourseDto, CourseDetailDto } from '../../lib/types';
 import { colors, fontSize, radius, spacing } from '../../lib/theme';
 import VideoCard, { VideoCardProps } from '../../components/VideoCard';
 
@@ -19,16 +20,13 @@ type ChatMsg =
     }
   | { role: 'system'; text: string };
 
-const MODULES = [
-  'Algèbre linéaire et calcul matriciel',
-  'Thermodynamique générale',
-  'Chimie',
-  'Probabilités et statistiques',
-  'Traitement du signal',
-  'Algorithmique & Programmation (Python)',
+const LEVELS: { key: ExplanationLevel; label: string }[] = [
+  { key: 'visual', label: 'Visuel' },
+  { key: 'beginner', label: 'Débutant' },
+  { key: 'advanced', label: 'Avancé' },
 ];
 
-const MODULE_SLUG: Record<string, string> = {
+const TITLE_SLUG: Record<string, string> = {
   'Algèbre linéaire et calcul matriciel': 'algebre-diagonalisation',
   'Thermodynamique générale': 'thermo-1er-principe',
   'Chimie': 'chimie-equilibre',
@@ -37,24 +35,41 @@ const MODULE_SLUG: Record<string, string> = {
   'Algorithmique & Programmation (Python)': 'algo-recursivite',
 };
 
-const CHAPTERS = ['Chapitre 1', 'Chapitre 2', 'Chapitre 3', 'Chapitre 4'];
-
-const LEVELS: { key: ExplanationLevel; label: string }[] = [
-  { key: 'visual', label: 'Visuel' },
-  { key: 'beginner', label: 'Débutant' },
-  { key: 'advanced', label: 'Avancé' },
-];
+function courseSlug(title: string): string {
+  return TITLE_SLUG[title] ?? title.toLowerCase().replace(/[^a-z]+/g, '-').replace(/-+$/, '');
+}
 
 export default function NexusAI() {
   const [input, setInput] = useState('');
   const [busy, setBusy] = useState(false);
-  const [selectedModule, setSelectedModule] = useState(MODULES[0]);
-  const [selectedChapter, setSelectedChapter] = useState('Chapitre 3');
   const [selectedLevel, setSelectedLevel] = useState<ExplanationLevel>('visual');
   const [moduleOpen, setModuleOpen] = useState(false);
   const [chapterOpen, setChapterOpen] = useState(false);
   const [messages, setMessages] = useState<ChatMsg[]>([]);
   const scroller = useRef<ScrollView | null>(null);
+
+  const courses = useQuery({
+    queryKey: ['courses'],
+    queryFn: () => unwrap<CourseDto[]>(api.get('/api/courses')),
+  });
+
+  const moduleList = courses.data ?? [];
+  const [selectedCourseId, setSelectedCourseId] = useState<string | null>(null);
+  const selectedCourse = moduleList.find((c) => c.id === selectedCourseId) ?? moduleList[0] ?? null;
+  const [selectedChapter, setSelectedChapter] = useState<string | null>(null);
+
+  const detail = useQuery({
+    queryKey: ['course-detail', selectedCourse?.id],
+    queryFn: () => unwrap<CourseDetailDto>(api.get(`/api/courses/${selectedCourse!.id}`)),
+    enabled: !!selectedCourse?.id,
+  });
+
+  const sections = detail.data?.sections ?? [];
+  useEffect(() => {
+    if (sections.length > 0 && (!selectedChapter || !sections.some((s) => s.title === selectedChapter))) {
+      setSelectedChapter(sections[0].title);
+    }
+  }, [sections, selectedChapter]);
 
   useEffect(() => {
     setTimeout(() => scroller.current?.scrollToEnd({ animated: true }), 80);
@@ -64,7 +79,7 @@ export default function NexusAI() {
     const display = input.trim();
     if (!display || busy) return;
 
-    const slug = MODULE_SLUG[selectedModule] ?? 'algebre-diagonalisation';
+    const slug = selectedCourse ? courseSlug(selectedCourse.title) : 'algebre-diagonalisation';
     setInput('');
     setBusy(true);
     setMessages((prev) => [...prev, { role: 'user', text: display }]);
@@ -86,6 +101,8 @@ export default function NexusAI() {
           url: `https://www.youtube.com/watch?v=${v.videoId}`,
           videoId: v.videoId,
           thumbnailUrl: v.thumbnailUrl ?? v.thumbnail ?? `https://i.ytimg.com/vi/${v.videoId}/hqdefault.jpg`,
+          score: v.transcriptScore ?? v.score,
+          transcriptExcerpt: v.matchedExcerpt,
         }));
       }
 
@@ -140,28 +157,28 @@ export default function NexusAI() {
         <View style={styles.selectorPanel}>
           <Text style={styles.selectorLabel}>Module</Text>
           <Pressable style={styles.selectBtn} onPress={() => setModuleOpen((v) => !v)}>
-            <Text style={styles.selectText}>{selectedModule}</Text>
+            <Text style={styles.selectText}>{selectedCourse?.title ?? 'Chargement...'}</Text>
             <Text style={styles.selectChevron}>{moduleOpen ? '⌃' : '⌄'}</Text>
           </Pressable>
           {moduleOpen && (
             <View style={styles.selectMenu}>
-              {MODULES.map((module) => (
+              {moduleList.map((course) => (
                 <Pressable
-                  key={module}
-                  style={[styles.selectOption, selectedModule === module && styles.selectOptionActive]}
+                  key={course.id}
+                  style={[styles.selectOption, selectedCourse?.id === course.id && styles.selectOptionActive]}
                   onPress={() => {
-                    setSelectedModule(module);
+                    setSelectedCourseId(course.id);
                     setModuleOpen(false);
                   }}
                 >
-                  <Text style={[styles.selectOptionText, selectedModule === module && styles.selectOptionTextActive]}>
-                    {module}
+                  <Text style={[styles.selectOptionText, selectedCourse?.id === course.id && styles.selectOptionTextActive]}>
+                    {course.title}
                   </Text>
                 </Pressable>
               ))}
             </View>
           )}
-          {selectedModule === MODULES[0] && (
+          {sections.length > 0 && (
             <View style={styles.chapterArea}>
               <Text style={[styles.selectorLabel, styles.chapterSelectorLabel]}>Chapitre</Text>
               <Pressable style={styles.selectBtn} onPress={() => setChapterOpen((v) => !v)}>
@@ -170,26 +187,20 @@ export default function NexusAI() {
               </Pressable>
               {chapterOpen && (
                 <View style={styles.selectMenu}>
-                  {CHAPTERS.map((chapter) => (
+                  {sections.map((section) => (
                     <Pressable
-                      key={chapter}
-                      style={[styles.selectOption, selectedChapter === chapter && styles.selectOptionActive]}
+                      key={section.id}
+                      style={[styles.selectOption, selectedChapter === section.title && styles.selectOptionActive]}
                       onPress={() => {
-                        setSelectedChapter(chapter);
+                        setSelectedChapter(section.title);
                         setChapterOpen(false);
                       }}
                     >
-                      <Text style={[styles.selectOptionText, selectedChapter === chapter && styles.selectOptionTextActive]}>
-                        {chapter}
+                      <Text style={[styles.selectOptionText, selectedChapter === section.title && styles.selectOptionTextActive]}>
+                        {section.title}
                       </Text>
                     </Pressable>
                   ))}
-                </View>
-              )}
-              {selectedChapter === 'Chapitre 3' && (
-                <View style={styles.chapterBox}>
-                  <Text style={styles.chapterLabel}>Concept du TD</Text>
-                  <Text style={styles.chapterTitle}>Diagonalisation d’une matrice</Text>
                 </View>
               )}
             </View>
@@ -315,14 +326,6 @@ const styles = StyleSheet.create({
   selectOptionTextActive: { color: colors.primary, fontWeight: '800' },
   chapterArea: { marginTop: spacing.md },
   chapterSelectorLabel: { marginTop: 0 },
-  chapterBox: {
-    marginTop: spacing.md,
-    padding: spacing.md,
-    borderRadius: radius.md,
-    backgroundColor: colors.primarySoft,
-  },
-  chapterLabel: { color: colors.primary, fontSize: fontSize.xs, fontWeight: '800', textTransform: 'uppercase', letterSpacing: 0.5 },
-  chapterTitle: { color: colors.text, fontSize: fontSize.md, fontWeight: '800', marginTop: 2 },
 
   msgRow: { marginBottom: spacing.md },
   msgRowUser: { alignItems: 'flex-end' },

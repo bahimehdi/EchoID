@@ -61,17 +61,13 @@ export default function Home() {
 
   const greetingName = (user?.fullName ?? user?.email ?? '').split(' ')[0] || 'étudiant';
 
-  const todayItems = courses.data?.slice(0, 3).map((c, i) => {
-    const periods = ['10:00 – 12:00', '14:30 – 16:00', '08:30 – 10:00'];
-    const rooms = ['Salle 402', 'Amphi B', 'Salle 105'];
-    return {
-      title: c.title,
-      sub: `Cours — ${rooms[i % rooms.length]}`,
-      time: periods[i % periods.length],
-      accent: (i === 1 ? 'orange' : 'primary') as 'primary' | 'orange',
-      badge: i === 0 ? 'Aujourd\'hui' : null,
-    };
-  });
+  const todayItems = courses.data?.slice(0, 3).map((c) => ({
+    title: c.title,
+    sub: 'Cours',
+    time: null,
+    accent: 'primary' as const,
+    badge: null,
+  }));
 
   return (
     <View style={styles.root}>
@@ -124,24 +120,20 @@ export default function Home() {
             {todayItems?.map((item, i) => (
               <View
                 key={i}
-                style={[
-                  styles.programItem,
-                  { borderLeftColor: item.accent === 'orange' ? colors.accentOrange : colors.primary },
-                  i > 0 && { marginTop: spacing.md },
-                ]}
-              >
-                <View style={[styles.programIcon, { backgroundColor: item.accent === 'orange' ? colors.accentOrangeSoft : colors.primarySoft }]}>
-                  <Text style={[styles.programIconText, { color: item.accent === 'orange' ? colors.accentOrange : colors.primary }]}>
-                    {item.accent === 'orange' ? '⊟' : 'A'}
-                  </Text>
-                </View>
+                  style={[
+                    styles.programItem,
+                    { borderLeftColor: colors.primary },
+                    i > 0 && { marginTop: spacing.md },
+                  ]}
+                >
+                  <View style={[styles.programIcon, { backgroundColor: colors.primarySoft }]}>
+                    <Text style={[styles.programIconText, { color: colors.primary }]}>
+                      A
+                    </Text>
+                  </View>
                 <View style={{ flex: 1 }}>
                   <Text style={styles.programTitle} numberOfLines={1}>{item.title}</Text>
                   <Text style={styles.programSub} numberOfLines={1}>{item.sub}</Text>
-                </View>
-                <View style={{ alignItems: 'flex-end' }}>
-                  <Text style={styles.programTime}>{item.time}</Text>
-                  {item.badge && <Text style={styles.programBadge}>{item.badge}</Text>}
                 </View>
               </View>
             ))}

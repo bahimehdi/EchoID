@@ -9,7 +9,6 @@ import ocr
 import videos
 import workload
 import recommendations
-import fixture_loader
 from settings import get_settings
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(name)s — %(message)s")
@@ -21,15 +20,14 @@ settings = get_settings()
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     log.info("EchoID AI service starting...")
-    fixture_loader.load_all()
     yield
     log.info("EchoID AI service shutting down.")
 
 
 app = FastAPI(
     title="EchoID Nexus — AI Microservice",
-    description="Fixture-backed explainer / OCR / video endpoints for the demo. "
-    "Same shapes as production; swap in live LLM / Tesseract / YouTube Data API behind the cache.",
+    description="EchoID AI Microservice — transcript-semantic video recommendations, "
+    "Gemini-powered explainer, Tesseract OCR, live Wd scoring.",
     version="0.2.0",
     lifespan=lifespan,
 )

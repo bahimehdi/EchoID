@@ -86,7 +86,6 @@ export default function Courses() {
           const selectedChapter = selectedChapters[c.id] ?? defaultChapter;
           const chapterOpen = openChapterFor === c.id;
           const assignment = nextAssignment(c.id);
-          const semesters = ['S1', 'S2', 'S3', 'S4', 'S5', 'S6'];
           const done = assignment == null;
 
           return (
@@ -97,7 +96,7 @@ export default function Courses() {
                 </View>
                 <View style={{ alignItems: 'flex-end' }}>
                   <Badge tone={done ? 'green' : 'primary'}>
-                    {done ? '✓ Terminé' : semesterTag(semesters[i % semesters.length])}
+                    {done ? '✓ Terminé' : semesterTag(c.semester)}
                   </Badge>
                 </View>
               </View>
@@ -138,9 +137,11 @@ export default function Courses() {
                   <Text style={styles.assignmentDue}>{fmtDate(assignment.dueAt)}</Text>
                 </View>
               )}
-              <View style={{ marginTop: spacing.md }}>
-                <ProgressBar pct={assignment ? 35 : 98} />
-              </View>
+              {assignment && (
+                <View style={{ marginTop: spacing.md }}>
+                  <ProgressBar pct={Math.min(100, (assignment.complexity ?? 0) * 25)} />
+                </View>
+              )}
             </Card>
           );
         })}

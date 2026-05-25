@@ -11,6 +11,7 @@ export type VideoCardProps = {
   viewCount?: number | null;
   likeCount?: number | null;
   score?: number | null;
+  transcriptExcerpt?: string | null;
 };
 
 const compact = (n: number): string => {
@@ -30,7 +31,7 @@ const fallbackThumb = (url: string): string | null => {
   return m ? `https://i.ytimg.com/vi/${m[1]}/mqdefault.jpg` : null;
 };
 
-export default function VideoCard({ title, channel, url, thumbnailUrl, durationSec, viewCount, likeCount }: VideoCardProps) {
+export default function VideoCard({ title, channel, url, thumbnailUrl, durationSec, viewCount, likeCount, score, transcriptExcerpt }: VideoCardProps) {
   const thumb = thumbnailUrl ?? fallbackThumb(url);
   return (
     <Pressable onPress={() => Linking.openURL(url)} style={styles.card}>
@@ -59,6 +60,14 @@ export default function VideoCard({ title, channel, url, thumbnailUrl, durationS
             {viewCount != null && <Text style={styles.metaText}>👁  {compact(viewCount)}</Text>}
             {likeCount != null && <Text style={styles.metaText}>👍  {compact(likeCount)}</Text>}
           </View>
+        )}
+        {score != null && (
+          <View style={styles.metaRow}>
+            <Text style={styles.metaText}>🎯  Pertinence {Math.round(score * 100)}%</Text>
+          </View>
+        )}
+        {transcriptExcerpt && (
+          <Text style={styles.excerpt} numberOfLines={2}>{transcriptExcerpt}</Text>
         )}
       </View>
     </Pressable>
@@ -97,6 +106,7 @@ const styles = StyleSheet.create({
   channel: { color: colors.textMuted, fontSize: fontSize.sm },
   metaRow: { flexDirection: 'row', gap: spacing.md, marginTop: 4 },
   metaText: { color: colors.textSubtle, fontSize: fontSize.xs, fontWeight: '600' },
+  excerpt: { color: colors.textMuted, fontSize: fontSize.xs, fontStyle: 'italic', marginTop: 4, lineHeight: 16 },
   scorePill: {
     backgroundColor: colors.primarySoft,
     paddingHorizontal: 8, paddingVertical: 2, borderRadius: radius.pill,
