@@ -52,12 +52,9 @@ export type ExplainResponse = {
   explanation: string;
   keyPoints: string[];
   level: ExplanationLevel;
-  videosSlug?: string;
-  isFallback: boolean;
 };
 
 export type OcrResponse = {
-  fixtureSlug: string;
   courseId?: string;
   ocrStatus: 'OK' | 'PARTIAL' | 'FAILED';
   pageCount: number;

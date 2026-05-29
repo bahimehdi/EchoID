@@ -30,7 +30,6 @@ _CONCEPT_KEYWORDS: list[tuple[str, list[str]]] = [
 
 
 class OcrResponse(BaseModel):
-    fixtureSlug: str
     courseId: Optional[str] = None
     ocrStatus: str
     pageCount: int
@@ -105,7 +104,6 @@ def _ocr_pdf(pdf_path: str, lang: str) -> tuple[str, float, int]:
 @router.post("/process-notes", response_model=OcrResponse)
 async def process_notes(
     file: UploadFile = File(...),
-    fixture_slug: Optional[str] = None,
 ) -> OcrResponse:
     if not file.filename:
         raise HTTPException(status_code=400, detail="No file provided")
@@ -140,7 +138,6 @@ async def process_notes(
     concepts = _index_concepts(text)
 
     return OcrResponse(
-        fixtureSlug=fixture_slug or os.path.splitext(file.filename)[0],
         ocrStatus="OK" if text.strip() else "FAILED",
         pageCount=page_count or 1,
         extractedText=text.strip() or "(Aucun texte détecté)",
