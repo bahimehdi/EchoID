@@ -28,6 +28,18 @@ export async function unwrap<T>(p: Promise<{ data: ApiEnvelope<T> }>): Promise<T
   return r.data.data;
 }
 
+/** For endpoints that return raw JSON (arrays, non-envelope). */
+export async function rawGet<T>(url: string): Promise<T> {
+  const r = await api.get<T>(url);
+  // Some AI-service endpoints wrap in { success, data } too
+  const d: any = r.data;
+  if (d && typeof d === 'object' && 'success' in d) {
+    if (!d.success) throw new Error(d.message ?? 'API error');
+    return d.data as T;
+  }
+  return r.data;
+}
+
 export const session = {
   save(token: string, user: WebUser) {
     localStorage.setItem(TOKEN_KEY, token);

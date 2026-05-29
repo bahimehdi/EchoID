@@ -1,6 +1,7 @@
 # Project knowledge base — local only
 Context/
 .context/
+.context.zip
 
 # Secrets — never commit
 infra/env/.env
