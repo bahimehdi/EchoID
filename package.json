@@ -1,0 +1,27 @@
+{
+  "name": "echoid",
+  "version": "1.0.0",
+  "description": "> **Minimum Viable Product** — real AI-driven explanations, OCR ingestion, transcript-based video ranking, and predictive workload modelling, integrated on top of university LMS platforms (Moodle, Google Classroom).",
+  "main": "index.js",
+  "directories": {
+    "doc": "docs"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/bahimehdi/EchoID.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/bahimehdi/EchoID/issues"
+  },
+  "homepage": "https://github.com/bahimehdi/EchoID#readme",
+  "devDependencies": {
+    "@playwright/test": "^1.60.0"
+  }
+}

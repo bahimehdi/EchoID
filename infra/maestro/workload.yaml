@@ -1,0 +1,13 @@
+appId: com.echoid.student
+---
+- launchApp
+- tapOn:
+    text: "Workload"
+    index: 2
+- waitForVisible:
+    text: "Analyse de Charge de Travail"
+    timeout: 15000
+- assertVisible:
+    text: "Capacité Actuelle"
+- assertVisible:
+    text: "Échéances à venir"

@@ -1,5 +1,6 @@
 package com.echoid.nexus.dto;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -31,6 +32,7 @@ public class CourseDetailDto {
     @Schema(description = "Academic semester", example = "S1")
     private String semester;
 
+    @JsonProperty("isActive")
     @Schema(description = "Whether the course is currently active", example = "true")
     private boolean isActive;
 

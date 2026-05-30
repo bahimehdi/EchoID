@@ -1,0 +1,15 @@
+appId: com.echoid.student
+---
+- launchApp
+- tapOn:
+    text: "Mes Cours"
+    index: 1
+- waitForVisible:
+    text: "Mes Cours"
+    timeout: 10000
+- assertVisible:
+    text: "Chapitres"
+- tapOn:
+    text: "⌄"
+- assertVisible:
+    text: "Chapitre 1"

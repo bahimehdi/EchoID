@@ -1,0 +1,21 @@
+appId: com.echoid.student
+---
+- launchApp
+- waitForVisible:
+    text: "Bonjour"
+    timeout: 15000
+- tapOn:
+    text: "Se connecter"
+- inputText:
+    text: "student@ensa.uit.ac.ma"
+    field:
+      id: "email-input"
+- inputText:
+    text: "demo1234"
+    field:
+      id: "password-input"
+- tapOn:
+    text: "Connexion"
+- assertVisible:
+    text: "Bonjour"
+    timeout: 10000

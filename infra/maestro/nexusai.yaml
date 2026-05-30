@@ -1,0 +1,24 @@
+appId: com.echoid.student
+---
+- launchApp
+- tapOn:
+    text: "NexusAI"
+    index: 1
+- waitForVisible:
+    text: "Module"
+    timeout: 10000
+- tapOn:
+    text: "Algèbre linéaire"
+- assertVisible:
+    text: "Niveau d'explication"
+- tapOn:
+    text: "Débutant"
+- inputText:
+    text: "Explique les matrices"
+    field:
+      id: "chat-input"
+- tapOn:
+    text: "↑"
+- waitForVisible:
+    text: "NexusAI rédige"
+    timeout: 30000
