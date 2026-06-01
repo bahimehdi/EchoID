@@ -65,6 +65,30 @@ class TestOcrEndpoint:
 
 
 class TestOcrImage:
+    def test_pytesseract_import_error(self):
+        import builtins
+        import sys as _sys
+        orig_import = builtins.__import__
+        saved_pyt = _sys.modules.pop("pytesseract", None)
+        saved_pil = _sys.modules.pop("PIL", None)
+
+        def _import(name, *a, **kw):
+            if name in ("pytesseract", "PIL"):
+                raise ImportError(f"No module named {name}")
+            return orig_import(name, *a, **kw)
+
+        try:
+            with patch("builtins.__import__", side_effect=_import):
+                from ocr import _ocr_image
+                text, conf = _ocr_image("fake.png", "fra")
+            assert text == ""
+            assert conf == 0.0
+        finally:
+            if saved_pyt is not None:
+                _sys.modules["pytesseract"] = saved_pyt
+            if saved_pil is not None:
+                _sys.modules["PIL"] = saved_pil
+
     @patch("pytesseract.image_to_string")
     @patch("pytesseract.image_to_data")
     @patch("PIL.Image.open")
@@ -98,6 +122,29 @@ class TestOcrImage:
 
 
 class TestOcrPdf:
+    def test_fitz_import_error(self):
+        import builtins
+        import sys as _sys
+        orig_import = builtins.__import__
+        saved_fitz = _sys.modules.pop("fitz", None)
+
+        def _import(name, *a, **kw):
+            if name == "fitz":
+                raise ImportError("No module named fitz")
+            return orig_import(name, *a, **kw)
+
+        try:
+            with patch("builtins.__import__", side_effect=_import):
+                from ocr import _ocr_pdf
+                text, conf, pages = _ocr_pdf("fake.pdf", "fra")
+            assert text == ""
+            assert conf == 0.0
+            assert pages == 0
+        finally:
+            if saved_fitz is not None:
+                _sys.modules["fitz"] = saved_fitz
+
+
     @patch("ocr.os.unlink")
     @patch("tempfile.NamedTemporaryFile")
     @patch("ocr._ocr_image")
@@ -132,3 +179,60 @@ class TestOcrPdf:
         assert text == ""
         assert conf == 0.0
         assert pages == 0
+
+
+class TestOcrEndpointProcess:
+    @pytest.mark.asyncio
+    @patch("ocr._ocr_image", return_value=("texte extrait", 0.85))
+    async def test_image_file_success(self, mock_ocr, client):
+        async with client as ac:
+            r = await ac.post(
+                "/ocr/process-notes",
+                files={"file": ("note.png", b"fake", "image/png")},
+            )
+        assert r.status_code == 200
+        data = r.json()
+        assert data["extractedText"] == "texte extrait"
+        assert data["confidence"] == 0.85
+        assert data["ocrStatus"] == "OK"
+        assert data["pageCount"] == 1
+        assert "processingMs" in data
+
+    @pytest.mark.asyncio
+    @patch("ocr._ocr_image", return_value=("", 0.0))
+    async def test_image_file_failed(self, mock_ocr, client):
+        async with client as ac:
+            r = await ac.post(
+                "/ocr/process-notes",
+                files={"file": ("blank.png", b"fake", "image/png")},
+            )
+        assert r.status_code == 200
+        data = r.json()
+        assert data["extractedText"] == "(Aucun texte détecté)"
+        assert data["ocrStatus"] == "FAILED"
+
+    @pytest.mark.asyncio
+    @patch("ocr._ocr_pdf", return_value=("pdf text", 0.92, 3))
+    async def test_pdf_file_success(self, mock_ocr, client):
+        async with client as ac:
+            r = await ac.post(
+                "/ocr/process-notes",
+                files={"file": ("notes.pdf", b"fake", "application/pdf")},
+            )
+        assert r.status_code == 200
+        data = r.json()
+        assert data["extractedText"] == "pdf text"
+        assert data["pageCount"] == 3
+        assert data["confidence"] == 0.92
+        assert data["ocrStatus"] == "OK"
+
+    @pytest.mark.asyncio
+    @patch("ocr._ocr_image", side_effect=Exception("processing failed"))
+    async def test_processing_error(self, mock_ocr, client):
+        async with client as ac:
+            r = await ac.post(
+                "/ocr/process-notes",
+                files={"file": ("bad.png", b"fake", "image/png")},
+            )
+        assert r.status_code == 500
+        assert "Erreur" in r.json()["detail"]

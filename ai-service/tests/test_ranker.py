@@ -29,12 +29,14 @@ class TestRankChunks:
 
     def test_sort_descending_by_score(self):
         chunks = [{"text": "python programming loops"}, {"text": "irrelevant text here"}]
+        mock_sims = MagicMock()
+        mock_sims.flatten.return_value = [0.9, 0.1]
         with patch("ranker.HAS_SKLEARN", True), \
              patch("ranker.TfidfVectorizer"), \
-             patch("ranker.cosine_similarity") as mock_cos:
-            mock_cos.return_value = [[0.9, 0.1]]
+             patch("ranker.cosine_similarity", return_value=mock_sims):
             result = ranker.rank_chunks("python programming", chunks)
-        assert result[0]["score"] >= result[1]["score"]
+        assert result[0]["score"] == 0.9
+        assert result[1]["score"] == 0.1
 
     @patch("ranker.TfidfVectorizer")
     @patch("ranker.cosine_similarity")
@@ -43,6 +45,20 @@ class TestRankChunks:
         chunks = [{"text": "hello world"}]
         result = ranker.rank_chunks("test query", chunks)
         assert result[0]["score"] == 0.0
+
+
+    def test_scored_chunks_respect_scores(self):
+        chunks = [{"text": "a"}, {"text": "b"}]
+        mock_sims = MagicMock()
+        mock_sims.flatten.return_value = [0.3, 0.7]
+        with patch("ranker.HAS_SKLEARN", True), \
+             patch("ranker.TfidfVectorizer"), \
+             patch("ranker.cosine_similarity", return_value=mock_sims):
+            result = ranker.rank_chunks("test", chunks)
+        assert result[0]["text"] == "b"
+        assert result[0]["score"] == 0.7
+        assert result[1]["text"] == "a"
+        assert result[1]["score"] == 0.3
 
 
 class TestBestScore:
