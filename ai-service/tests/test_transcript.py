@@ -5,6 +5,28 @@ import transcript as tr
 
 
 class TestFetchTranscript:
+    def test_youtube_transcript_api_import_error(self):
+        import builtins
+        import importlib
+        import sys as _sys
+        import transcript as _tr
+        orig_import = builtins.__import__
+        saved = {k: _sys.modules.pop(k) for k in list(_sys.modules) if "youtube_transcript_api" in k}
+
+        def _import(name, *a, **kw):
+            if "youtube_transcript_api" in name:
+                raise ImportError(f"No module named {name}")
+            return orig_import(name, *a, **kw)
+
+        try:
+            with patch("builtins.__import__", side_effect=_import):
+                importlib.reload(_tr)
+            assert _tr.HAS_TRANSCRIPT_API is False
+            assert _tr.fetch_transcript("abc123") is None
+        finally:
+            _sys.modules.update(saved)
+            importlib.reload(_tr)
+
     @patch("transcript.HAS_TRANSCRIPT_API", False)
     def test_api_not_available(self):
         result = tr.fetch_transcript("abc123")

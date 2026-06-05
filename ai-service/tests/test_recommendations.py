@@ -103,3 +103,11 @@ async def test_cheating_clusters(client):
     assert r.status_code == 200
     data = r.json()
     assert isinstance(data, list)
+
+
+@pytest.mark.asyncio
+async def test_cheating_clusters_unsupported_school(client):
+    async with client as ac:
+        r = await ac.get("/recommendations/cheating-clusters?school=EST")
+    assert r.status_code == 200
+    assert r.json() == []

@@ -133,7 +133,7 @@ class TestFetchMetadata:
 
     @patch("youtube.httpx.get")
     def test_non_200(self, mock_get):
-        mock_get.return_value = MagicMock(status_code=403, text=lambda: "Forbidden")
+        mock_get.return_value = MagicMock(status_code=403, text="Forbidden")
         result = yt.fetch_metadata("fake-key", ["abc"])
         assert result == {}
 

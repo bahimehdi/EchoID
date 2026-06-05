@@ -61,6 +61,33 @@ class TestRankChunks:
         assert result[1]["score"] == 0.3
 
 
+class TestImportError:
+    def test_sklearn_import_error(self):
+        import builtins
+        import importlib
+        import sys as _sys
+        orig_import = builtins.__import__
+        saved = {}
+        for k in list(_sys.modules):
+            if "sklearn" in k:
+                saved[k] = _sys.modules.pop(k)
+
+        def _import(name, *a, **kw):
+            if "sklearn" in name:
+                raise ImportError(f"No module named {name}")
+            return orig_import(name, *a, **kw)
+
+        try:
+            with patch("builtins.__import__", side_effect=_import):
+                import ranker as _r
+                importlib.reload(_r)
+            assert _r.HAS_SKLEARN is False
+        finally:
+            _sys.modules.update(saved)
+            import ranker
+            importlib.reload(ranker)
+
+
 class TestBestScore:
     def test_empty_list(self):
         assert ranker.best_score([]) == 0.0

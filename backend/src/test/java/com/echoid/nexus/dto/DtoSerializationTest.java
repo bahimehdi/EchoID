@@ -146,4 +146,185 @@ class DtoSerializationTest {
         // session_event fields should be null when not set
         assertThat(json).contains("\"sessionEventType\":null");
     }
+
+    // ── Remaining DTOs ──────────────────────────────────────────────────────
+
+    @Test
+    void adminHealthDto_serializes() throws Exception {
+        AdminHealthDto dto = AdminHealthDto.builder()
+                .totalActiveStudents(47).totalUploadsThisWeek(12).atRiskCount(5)
+                .lmsStatus("operational").aiServiceStatus("operational")
+                .lastEventReceivedAt(OffsetDateTime.now()).apiQuotaRemaining(500)
+                .build();
+        String json = mapper.writeValueAsString(dto);
+        assertThat(json).contains("\"totalActiveStudents\":47");
+        assertThat(json).contains("\"aiServiceStatus\":\"operational\"");
+        assertThat(json).contains("\"apiQuotaRemaining\":500");
+    }
+
+    @Test
+    void assignmentDto_serializes() throws Exception {
+        AssignmentDto dto = AssignmentDto.builder()
+                .id(UUID.randomUUID()).courseId(UUID.randomUUID())
+                .courseTitle("Intro ML").title("Linear Regression Report")
+                .description("Analyze dataset").complexity(3.2)
+                .dueAt(OffsetDateTime.now()).assignmentType("PROJECT")
+                .build();
+        String json = mapper.writeValueAsString(dto);
+        assertThat(json).contains("\"courseTitle\":\"Intro ML\"");
+        assertThat(json).contains("\"complexity\":3.2");
+        assertThat(json).contains("\"assignmentType\":\"PROJECT\"");
+    }
+
+    @Test
+    void courseDto_serializes() throws Exception {
+        CourseDto dto = CourseDto.builder()
+                .id(UUID.randomUUID()).title("Machine Learning")
+                .lmsSource("MOODLE").school("ENSA").semester("S2")
+                .isActive(true)
+                .build();
+        String json = mapper.writeValueAsString(dto);
+        assertThat(json).contains("\"title\":\"Machine Learning\"");
+        assertThat(json).contains("\"lmsSource\":\"MOODLE\"");
+        assertThat(json).contains("\"semester\":\"S2\"");
+        assertThat(json).contains("\"active\":true");
+    }
+
+    @Test
+    void courseSectionDto_serializes() throws Exception {
+        CourseSectionDto dto = CourseSectionDto.builder()
+                .id(UUID.randomUUID()).title("Chapter 3: Sorting")
+                .orderIndex(3)
+                .build();
+        String json = mapper.writeValueAsString(dto);
+        assertThat(json).contains("\"title\":\"Chapter 3: Sorting\"");
+        assertThat(json).contains("\"orderIndex\":3");
+    }
+
+    @Test
+    void deviceTokenRequest_serializes() throws Exception {
+        DeviceTokenRequest dto = DeviceTokenRequest.builder()
+                .token("ExponentPushToken[xxx]").platform("ANDROID")
+                .build();
+        String json = mapper.writeValueAsString(dto);
+        assertThat(json).contains("\"token\":\"ExponentPushToken[xxx]\"");
+        assertThat(json).contains("\"platform\":\"ANDROID\"");
+    }
+
+    @Test
+    void explainRequest_serializes() throws Exception {
+        ExplainRequest dto = ExplainRequest.builder()
+                .conceptText("Big-O notation").courseId(UUID.randomUUID())
+                .sectionId(UUID.randomUUID()).level("BEGINNER")
+                .build();
+        String json = mapper.writeValueAsString(dto);
+        assertThat(json).contains("\"conceptText\":\"Big-O notation\"");
+        assertThat(json).contains("\"level\":\"BEGINNER\"");
+    }
+
+    @Test
+    void explanationCardDto_serializes() throws Exception {
+        ExplanationCardDto dto = ExplanationCardDto.builder()
+                .title("Understanding Big-O").body("Full explanation text")
+                .level("BEGINNER")
+                .bulletPoints(List.of("Point 1", "Point 2"))
+                .build();
+        String json = mapper.writeValueAsString(dto);
+        assertThat(json).contains("\"title\":\"Understanding Big-O\"");
+        assertThat(json).contains("\"level\":\"BEGINNER\"");
+        assertThat(json).contains("\"bulletPoints\"");
+    }
+
+    @Test
+    void loginRequest_serializes() throws Exception {
+        LoginRequest dto = LoginRequest.builder()
+                .email("student@ensa.uit.ac.ma").password("demo1234")
+                .build();
+        String json = mapper.writeValueAsString(dto);
+        assertThat(json).contains("\"email\":\"student@ensa.uit.ac.ma\"");
+        assertThat(json).contains("\"password\":\"demo1234\"");
+    }
+
+    @Test
+    void ocrResultDto_serializes() throws Exception {
+        OcrResultDto dto = OcrResultDto.builder()
+                .documentId(UUID.randomUUID())
+                .extractedText("notions de thermodynamique")
+                .pageCount(2).confidence(0.94)
+                .build();
+        String json = mapper.writeValueAsString(dto);
+        assertThat(json).contains("\"extractedText\":\"notions de thermodynamique\"");
+        assertThat(json).contains("\"pageCount\":2");
+        assertThat(json).contains("\"confidence\":0.94");
+    }
+
+    @Test
+    void refreshRequest_serializes() throws Exception {
+        RefreshRequest dto = RefreshRequest.builder()
+                .refreshToken("550e8400-e29b-41d4-a716-446655440000")
+                .build();
+        String json = mapper.writeValueAsString(dto);
+        assertThat(json).contains("\"refreshToken\":\"550e8400-e29b-41d4-a716-446655440000\"");
+    }
+
+    @Test
+    void registerRequest_serializes() throws Exception {
+        RegisterRequest dto = RegisterRequest.builder()
+                .email("student@ensa.uit.ac.ma").password("demo1234")
+                .displayName("Ahmed Benali").school("ENSA")
+                .build();
+        String json = mapper.writeValueAsString(dto);
+        assertThat(json).contains("\"email\":\"student@ensa.uit.ac.ma\"");
+        assertThat(json).contains("\"displayName\":\"Ahmed Benali\"");
+        assertThat(json).contains("\"school\":\"ENSA\"");
+    }
+
+    @Test
+    void userProfileDto_serializes() throws Exception {
+        UserProfileDto dto = UserProfileDto.builder()
+                .id(UUID.randomUUID()).email("student@ensa.uit.ac.ma")
+                .fullName("Ahmed Benali").picture("https://example.com/avatar.png")
+                .role("STUDENT").school("ENSA").emailVerified(true)
+                .createdAt(OffsetDateTime.now())
+                .build();
+        String json = mapper.writeValueAsString(dto);
+        assertThat(json).contains("\"email\":\"student@ensa.uit.ac.ma\"");
+        assertThat(json).contains("\"role\":\"STUDENT\"");
+        assertThat(json).contains("\"emailVerified\":true");
+    }
+
+    @Test
+    void videoResultDto_serializes() throws Exception {
+        VideoResultDto dto = VideoResultDto.builder()
+                .videoId("dQw4w9WgXcQ").title("Big-O Full Explanation")
+                .channelName("CS Academy")
+                .thumbnailUrl("https://i.ytimg.com/vi/dQw4w9WgXcQ/default.jpg")
+                .durationSeconds(540)
+                .build();
+        String json = mapper.writeValueAsString(dto);
+        assertThat(json).contains("\"videoId\":\"dQw4w9WgXcQ\"");
+        assertThat(json).contains("\"channelName\":\"CS Academy\"");
+        assertThat(json).contains("\"durationSeconds\":540");
+    }
+
+    @Test
+    void videoSearchRequest_serializes() throws Exception {
+        VideoSearchRequest dto = VideoSearchRequest.builder()
+                .conceptText("Big-O notation").courseId(UUID.randomUUID())
+                .build();
+        String json = mapper.writeValueAsString(dto);
+        assertThat(json).contains("\"conceptText\":\"Big-O notation\"");
+    }
+
+    @Test
+    void workloadDto_serializes() throws Exception {
+        WorkloadDto dto = WorkloadDto.builder()
+                .assignmentId(UUID.randomUUID()).aiComplexityScore(2.5)
+                .dueAt(OffsetDateTime.now()).hoursRemaining(48L).workloadIndex(1.8)
+                .build();
+        String json = mapper.writeValueAsString(dto);
+        assertThat(json).contains("\"aiComplexityScore\":2.5");
+        assertThat(json).contains("\"hoursRemaining\":48");
+        assertThat(json).contains("\"workloadIndex\":1.8");
+    }
 }
